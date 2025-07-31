@@ -14,31 +14,27 @@ Option Explicit
 
 Private Const MODULE_NAME = "Globals"
 
+Public json_helper As JsonHelper
+
 Public consts As Constants
 Public util As Utility
 Public progress_bar_controller As ProgressBarController
 Public progress_bar_next_run_time As Date
 Public progress_bar_active As Boolean
 
-Public api_slack As ApiSlack
-Public api_holidays As ApiHolidaysJp
-Public json_helper As JsonHelper
 
 Private Sub Class_Initialize()
+    Set json_helper = New JsonHelper
     Set consts = New Constants
+    Call consts.init(json_helper)
     Set util = New Utility
     Set progress_bar_controller = New ProgressBarController
-    Set api_slack = New ApiSlack
-    Set api_holidays = New ApiHolidaysJp
-    Set json_helper = New JsonHelper
 End Sub
 
 Private Sub Class_Terminate()
-    Set consts = Nothing
-    Set util = Nothing
-    Set progress_bar_controller = Nothing
-    Set api_slack = Nothing
-    Set api_holidays = Nothing
     Set json_helper = Nothing
+    Set util = Nothing
+    Set consts = Nothing
+    Set progress_bar_controller = Nothing
 End Sub
 

@@ -17,54 +17,35 @@ Private Const MODULE_NAME = "Constants"
 Public UPDATE_PROGRESS_BAR_PROC_NAME As String
 
 Public WEEKDAY_JP As Object
+Private Const WEEKDAY_JP_JSON = "{" & _
+    " '" & vbSunday & "': '日', " & _
+    " '" & vbMonday & "': '月', " & _
+    " '" & vbTuesday & "': '火', " & _
+    " '" & vbWednesday & "': '水', " & _
+    " '" & vbThursday & "': '木', " & _
+    " '" & vbFriday & "': '金', " & _
+    " '" & vbSaturday & "': '土' " & _
+    "}"
 
 Public COL_LETTERS As Object
-' {
-'   "LONG": {
-'       "SRC": {"SYMBOL": str, "NOTIONAL": str},
-'       "DST": {"SYMBOL": str, "NOTIONAL": str},
-'   },
-'   "SHORT": {
-'       "SRC": {"SYMBOL": str, "NOTIONAL": str},
-'       "DST": {"SYMBOL": str, "NOTIONAL": str},
-'   },
-' }
+Private Const COL_LETTERS_JSON = "{" & _
+    " 'LONG': { " & _
+        " 'SRC': { 'SYMBOL': 'U', 'NOTIONAL': 'V' }, " & _
+        " 'DST': { 'SYMBOL': 'Z', 'NOTIONAL': 'AA' } " & _
+    " }, " & _
+    " 'SHORT': { " & _
+        " 'SRC': { 'SYMBOL': 'U', 'NOTIONAL': 'V' }, " & _
+        " 'DST': { 'SYMBOL': 'Z', 'NOTIONAL': 'AA' } " & _
+    " } " & _
+    "}"
 
 Private Sub Class_Initialize()
     UPDATE_PROGRESS_BAR_PROC_NAME = "updateProgressBar"
-    
-    Set WEEKDAY_JP = CreateObject("Scripting.Dictionary")
-    WEEKDAY_JP.Add vbSunday, "日"
-    WEEKDAY_JP.Add vbMonday, "月"
-    WEEKDAY_JP.Add vbTuesday, "火"
-    WEEKDAY_JP.Add vbWednesday, "水"
-    WEEKDAY_JP.Add vbThursday, "木"
-    WEEKDAY_JP.Add vbFriday, "金"
-    WEEKDAY_JP.Add vbSaturday, "土"
+End Sub
 
-    ' --------------------------------------------------
-    ' COL_LETTERS
-    ' --------------------------------------------------
-    Set COL_LETTERS = CreateObject("Scripting.Dictionary")
-    
-    COL_LETTERS.Add "LONG", CreateObject("Scripting.Dictionary")
-    COL_LETTERS("LONG").Add "SRC", CreateObject("Scripting.Dictionary")
-    COL_LETTERS("LONG").Add "DST", CreateObject("Scripting.Dictionary")
-    COL_LETTERS.Add "SHORT", CreateObject("Scripting.Dictionary")
-    COL_LETTERS("SHORT").Add "SRC", CreateObject("Scripting.Dictionary")
-    COL_LETTERS("SHORT").Add "DST", CreateObject("Scripting.Dictionary")
-    
-    COL_LETTERS("LONG")("SRC").Add "SYMBOL", "U"
-    COL_LETTERS("LONG")("SRC").Add "NOTIONAL", "V"
-    COL_LETTERS("LONG")("DST").Add "SYMBOL", "Z"
-    COL_LETTERS("LONG")("DST").Add "NOTIONAL", "AA"
-
-    COL_LETTERS("SHORT")("SRC").Add "SYMBOL", "U"
-    COL_LETTERS("SHORT")("SRC").Add "NOTIONAL", "V"
-    COL_LETTERS("SHORT")("DST").Add "SYMBOL", "Z"
-    COL_LETTERS("SHORT")("DST").Add "NOTIONAL", "AA"
-    ' --------------------------------------------------
-
+Public Sub init(ByVal json_helper As JsonHelper)
+    Set WEEKDAY_JP = json_helper.ParseJson(Replace(WEEKDAY_JP_JSON, "'", DBL_QUOTE))
+    Set COL_LETTERS = json_helper.ParseJson(Replace(COL_LETTERS_JSON, "'", DBL_QUOTE))
 End Sub
 
 Private Sub Class_Terminate()
