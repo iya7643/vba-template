@@ -130,6 +130,12 @@ Private Declare Function utc_TzSpecificLocalTimeToSystemTime Lib "kernel32" Alia
 ' @param {String} json_String
 ' @return {Object} (Dictionary or Collection)
 ' @throws 10001 - JSON parse error
+' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+'   ' サンプルコード
+'    Dim json As String, obj As Object
+'    json = "{ 'a': 'banana', 'b': 123, 'c': [5,6,7] }"
+'    json = Replace(json, "'", DBL_QUOTE)
+'    Set obj = glob.json_helper.ParseJson(json)
 ''
 Public Function ParseJson(ByVal JsonString As String) As Object
     Dim json_Index As Long

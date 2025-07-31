@@ -118,3 +118,11 @@ Public Sub updateProgressBar()
     glob.progress_bar_next_run_time = Now + TimeValue("00:00:01")
     Call Application.OnTime(glob.progress_bar_next_run_time, glob.consts.UPDATE_PROGRESS_BAR_PROC_NAME)
 End Sub
+
+' --------------------------------------------------
+' Property
+' --------------------------------------------------
+Public Property Get DBL_QUOTE() As String
+    DBL_QUOTE = Chr(34)    ' 「"」を返却します。
+End Property
+

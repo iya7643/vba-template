@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} CalendarForm 
    Caption         =   "Select Date"
-   ClientHeight    =   4836
-   ClientLeft      =   204
-   ClientTop       =   1020
-   ClientWidth     =   9756.001
+   ClientHeight    =   5796
+   ClientLeft      =   228
+   ClientTop       =   1116
+   ClientWidth     =   11700
    OleObjectBlob   =   "CalendarForm.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
