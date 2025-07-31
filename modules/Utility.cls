@@ -171,8 +171,8 @@ End Function
 '''''
 ' 値が数値かチェックします。
 '''''
-Public Function isNumericValue(ByVal value As Variant) As Boolean
-    isNumericValue = IsNumeric(value) And Not IsEmpty(value)
+Public Function isNumericValue(ByVal tmp As Variant) As Boolean
+    isNumericValue = IsNumeric(tmp) And Not IsEmpty(tmp)
 End Function
 
 '''''
@@ -271,6 +271,40 @@ Public Function isUnloadedLsegWorkspace(ByVal ws As Worksheet) As Boolean
     
     isUnloadedLsegWorkspace = result
     
+End Function
+
+'''''
+' Collection[Collection]をインデックスが1から始まる2次元配列へ変換します。
+'''''
+Public Function nestedCollectionToArray(ByVal records As Collection, Optional ByVal is_start_one = True) As Variant
+    Dim result As Variant: result = Array()
+    
+    If records.Count = 0 Then GoTo Finally
+    
+    Dim i As Long, j As Long, col_count As Long
+    col_count = records(1).Count
+    For i = 1 To records.Count
+        If col_count <> records.Item(i).Count Then
+            Err.Raise 999, "", "inner collectionの要素数が行によって異なります。"
+        End If
+    Next
+    
+    
+    Dim offset As Integer: offset = -1
+    If is_start_one Then
+        offset = 0
+    End If
+    
+    ReDim result(1 + offset To records.Count + offset, 1 + offset To records(1).Count + offset)
+    For i = 1 To records.Count + offset
+        For j = 1 To records(1).Count + offset
+            result(i + offset, j + offset) = records.Item(i).Item(j)
+        Next
+    Next
+    
+Finally:
+    nestedCollectionToArray = result
+    ' NOTE: ActiveSheet.Range("A1").Resize(UBound(arr, 1), UBound(arr, 2)).Value = arr
 End Function
 
 ' [VBA]OneDriveで同期しているファイルまたはフォルダのURLをローカルパスに変換する関数

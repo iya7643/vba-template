@@ -71,7 +71,7 @@ On Error GoTo Except
     Dim i As Long, rng As Range
     Set rng = ActiveSheet.Range("A1")
     For i = 1 To 3000
-        rng.value = "更新中 " & Now
+        rng.Value = "更新中 " & Now
         rng.Font.Bold = True
         rng.Interior.Color = RGB(200, 230, 200)
 
