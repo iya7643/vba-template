@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} CalendarForm 
    Caption         =   "Select Date"
-   ClientHeight    =   4032
-   ClientLeft      =   132
-   ClientTop       =   744
-   ClientWidth     =   5652
+   ClientHeight    =   5796
+   ClientLeft      =   230
+   ClientTop       =   1120
+   ClientWidth     =   11700
    OleObjectBlob   =   "CalendarForm.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -628,7 +628,7 @@ Private Sub InitializeUserform(SelectedDate As Date, MinimumDate As Date, Maximu
         SelectedDateIn = SelectedDate
         SelectedYear = Year(SelectedDateIn)
         SelectedMonth = Month(SelectedDateIn)
-        SelectedDay = day(SelectedDateIn)
+        SelectedDay = Day(SelectedDateIn)
         Call SetSelectionLabel(SelectedDateIn)
     Else 'No SelectedDate provided, default to today's date
         cmdOkay.Enabled = False
@@ -648,7 +648,7 @@ Private Sub InitializeUserform(SelectedDate As Date, MinimumDate As Date, Maximu
     'years are within range of 1900 to 9999. If year combobox falls outside bounds
     'of MinDate and MaxDate, it will be overridden.
     Call SetMonthCombobox(SelectedYear, SelectedMonth)
-    scrlMonth.value = SelectedMonth
+    scrlMonth.Value = SelectedMonth
     cmbYearMin = SelectedYear - RangeOfYears
     cmbYearMax = SelectedYear + RangeOfYears
     If cmbYearMin < Year(MinDate) Then
@@ -660,7 +660,7 @@ Private Sub InitializeUserform(SelectedDate As Date, MinimumDate As Date, Maximu
     For i = cmbYearMin To cmbYearMax
         cmbYear.AddItem i
     Next i
-    cmbYear.value = SelectedYear
+    cmbYear.Value = SelectedYear
     
     'Set userform colors and effects
     Me.BackColor = BackgroundColor
@@ -745,14 +745,14 @@ Private Sub cmdToday_Click()
         cmdOkay.Enabled = True
         SelectedDateIn = TodayDate
         Call SetSelectionLabel(TodayDate)
-        SelectedDay = day(TodayDate)
+        SelectedDay = Day(TodayDate)
     End If
     
     'Get the month, day, and year, and set month scroll bar
     SelectedMonth = Month(TodayDate)
     SelectedYear = Year(TodayDate)
     SelectedDay = GetSelectedDay(SelectedMonth, SelectedYear)
-    scrlMonth.value = SelectedMonth
+    scrlMonth.Value = SelectedMonth
     
     'Set month/year labels and date labels
     Call SetMonthYear(SelectedMonth, SelectedYear)
@@ -811,8 +811,8 @@ Private Sub ClickControl(ctrl As MSForms.Control)
     Dim ColumnIndex As Long             'Column index of the clicked date label
     
     'Get selected day/year from scroll bar and combobox
-    SelectedMonth = scrlMonth.value
-    SelectedYear = cmbYear.value
+    SelectedMonth = scrlMonth.Value
+    SelectedYear = cmbYear.Value
     
     'Get indices of date label from label name and selected day from caption
     RowIndex = CLng(Left(Right(ctrl.Name, 2), 1))
@@ -856,7 +856,7 @@ Private Sub ClickControl(ctrl As MSForms.Control)
         UserformEventsEnabled = False
             cmdOkay.Enabled = True
             SelectedDateIn = SelectedDate
-            scrlMonth.value = SelectedMonth
+            scrlMonth.Value = SelectedMonth
             Call SetSelectionLabel(SelectedDate)
             Call SetMonthYear(SelectedMonth, SelectedYear)
             Call SetDays(SelectedMonth, SelectedYear, SelectedDay)
@@ -914,7 +914,7 @@ Private Sub cmbYear_Change()
     If Not UserformEventsEnabled Then Exit Sub
     
     UserformEventsEnabled = False
-    Call SetMonthCombobox(cmbYear.value, scrlMonth.value)
+    Call SetMonthCombobox(cmbYear.Value, scrlMonth.Value)
     UserformEventsEnabled = True
     
     Call cmbMonthYearChange
@@ -942,7 +942,7 @@ Private Sub cmbMonthYearChange()
     'calculation is necessary if the selected year has a maximum date set, because
     'the indices of the months in the combobox are still going to be the same in
     'either case.
-    SelectedYear = cmbYear.value
+    SelectedYear = cmbYear.Value
     If SelectedYear = Year(MinDate) Then
         SelectedMonth = cmbMonth.ListIndex + Month(MinDate)
     Else
@@ -952,7 +952,7 @@ Private Sub cmbMonthYearChange()
     'Get selected day, set the value of the month scroll bar, and reset all
     'date labels on the userform
     SelectedDay = GetSelectedDay(SelectedMonth, SelectedYear)
-    scrlMonth.value = SelectedMonth
+    scrlMonth.Value = SelectedMonth
     Call SetMonthYear(SelectedMonth, SelectedYear)
     Call SetDays(SelectedMonth, SelectedYear, SelectedDay)
     
@@ -983,42 +983,42 @@ Private Sub scrlMonth_Change()
     MaxMonth = 13
     
     'If the current year is the min or max year, set min or max months
-    TempYear = cmbYear.value
+    TempYear = cmbYear.Value
     If TempYear = Year(MinDate) Then MinMonth = Month(MinDate)
     If TempYear = Year(MaxDate) Then MaxMonth = Month(MaxDate)
     
     'Keep scroll bar within range of min and max dates
-    If scrlMonth.value < MinMonth Then scrlMonth.value = scrlMonth.value + 1
-    If scrlMonth.value > MaxMonth Then scrlMonth.value = scrlMonth.value - 1
+    If scrlMonth.Value < MinMonth Then scrlMonth.Value = scrlMonth.Value + 1
+    If scrlMonth.Value > MaxMonth Then scrlMonth.Value = scrlMonth.Value - 1
     
     'If user goes down one month from January, scroll bar will have value of
     '0. In this case, reset scroll bar back to December and decrement year
     'by 1.
-    If scrlMonth.value = 0 Then
-        scrlMonth.value = 12
-        cmbYear.value = cmbYear.value - 1
+    If scrlMonth.Value = 0 Then
+        scrlMonth.Value = 12
+        cmbYear.Value = cmbYear.Value - 1
         'If new year is outside range of combobox, add it to combobox
-        If cmbYear.value < cmbYearMin Then
-            cmbYear.AddItem cmbYear.value, 0
-            cmbYearMin = cmbYear.value
+        If cmbYear.Value < cmbYearMin Then
+            cmbYear.AddItem cmbYear.Value, 0
+            cmbYearMin = cmbYear.Value
         End If
-        Call SetMonthCombobox(cmbYear.value, scrlMonth.value)
+        Call SetMonthCombobox(cmbYear.Value, scrlMonth.Value)
     'If user goes up one month from December, scroll bar will have value of
     '13. Reset to January and increment year.
-    ElseIf scrlMonth.value = 13 Then
-        scrlMonth.value = 1
-        cmbYear.value = cmbYear.value + 1
+    ElseIf scrlMonth.Value = 13 Then
+        scrlMonth.Value = 1
+        cmbYear.Value = cmbYear.Value + 1
         'If new year is outside range of combobox, add it to combobox
-        If cmbYear.value > cmbYearMax Then
-            cmbYear.AddItem cmbYear.value, cmbYear.ListCount
-            cmbYearMax = cmbYear.value
+        If cmbYear.Value > cmbYearMax Then
+            cmbYear.AddItem cmbYear.Value, cmbYear.ListCount
+            cmbYearMax = cmbYear.Value
         End If
-        Call SetMonthCombobox(cmbYear.value, scrlMonth.value)
+        Call SetMonthCombobox(cmbYear.Value, scrlMonth.Value)
     End If
     
     'Get selected month, year, and day, and reset all userform labels
-    SelectedMonth = scrlMonth.value
-    SelectedYear = cmbYear.value
+    SelectedMonth = scrlMonth.Value
+    SelectedYear = cmbYear.Value
     SelectedDay = GetSelectedDay(SelectedMonth, SelectedYear)
     Call SetMonthYear(SelectedMonth, SelectedYear)
     Call SetDays(SelectedMonth, SelectedYear, SelectedDay)
@@ -1101,7 +1101,7 @@ Private Sub SetMonthYear(MonthIn As Long, YearIn As Long)
     Else
         cmbMonth.ListIndex = MonthIn - 1
     End If
-    cmbYear.value = YearIn
+    cmbYear.Value = YearIn
     
     'Set labels and position to center of scroll buttons. Labels are first
     'set to the width of the userform to avoid overflow, and then autosized
@@ -1109,13 +1109,13 @@ Private Sub SetMonthYear(MonthIn As Long, YearIn As Long)
     With lblMonth
         .AutoSize = False
         .Width = frameCalendar.Width
-        .Caption = cmbMonth.value
+        .Caption = cmbMonth.Value
         .AutoSize = True
     End With
     With lblYear
         .AutoSize = False
         .Width = frameCalendar.Width
-        .Caption = cmbYear.value
+        .Caption = cmbYear.Value
         .AutoSize = True
     End With
     
@@ -1149,7 +1149,7 @@ End Sub
 Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
     Dim PrevMonth As Long               'Month preceding selected month. Used for trailing dates
     Dim NextMonth As Long               'Month following selected month. Used for trailing dates
-    Dim Today As Date                   'Today's date
+    Dim today As Date                   'Today's date
     Dim TodayDay As Long                'Day number of today's date
     Dim StartDayOfWeek  As Long         'Stores the weekday number of the first day in selected month
     Dim LastDayOfMonth As Long          'Last day of the month
@@ -1173,8 +1173,8 @@ Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
     'respectively, since dates will never fall outside those bounds
     MinDay = 0
     MaxDay = 32
-    If YearIn = Year(MinDate) And MonthIn = Month(MinDate) Then MinDay = day(MinDate)
-    If YearIn = Year(MaxDate) And MonthIn = Month(MaxDate) Then MaxDay = day(MaxDate)
+    If YearIn = Year(MinDate) And MonthIn = Month(MinDate) Then MinDay = Day(MinDate)
+    If YearIn = Year(MaxDate) And MonthIn = Month(MaxDate) Then MaxDay = Day(MaxDate)
     
     'Find previous month and next month. Handle January
     'and December appropriately
@@ -1186,22 +1186,22 @@ Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
     'Set min and max days for previous month and next month, if applicable
     PrevMonthMinDay = 0
     NextMonthMaxDay = 32
-    If YearIn = Year(MinDate) And PrevMonth = Month(MinDate) Then PrevMonthMinDay = day(MinDate)
-    If YearIn = Year(MaxDate) And NextMonth = Month(MaxDate) Then NextMonthMaxDay = day(MaxDate)
+    If YearIn = Year(MinDate) And PrevMonth = Month(MinDate) Then PrevMonthMinDay = Day(MinDate)
+    If YearIn = Year(MaxDate) And NextMonth = Month(MaxDate) Then NextMonthMaxDay = Day(MaxDate)
 
     'Find last day of selected month and previous month. Find first weekday
     'in current month, and index of Saturday and Sunday relative to first weekday
-    LastDayOfMonth = day(DateSerial(YearIn, MonthIn + 1, 0))
-    LastDayOfPrevMonth = day(DateSerial(YearIn, MonthIn, 0))
+    LastDayOfMonth = Day(DateSerial(YearIn, MonthIn + 1, 0))
+    LastDayOfPrevMonth = Day(DateSerial(YearIn, MonthIn, 0))
     StartDayOfWeek = Weekday(DateSerial(YearIn, MonthIn, 1), StartWeek)
     If StartWeek = 1 Then SundayIndex = 1 Else SundayIndex = 9 - StartWeek
     SaturdayIndex = 8 - StartWeek
 
     'If user is viewing current month/year, we want to highlight today's date. If
     'not, TodayDay is set to 0, since that value will never be encountered
-    Today = Date
-    If YearIn = Year(Today) And MonthIn = Month(Today) Then
-        TodayDay = day(Today)
+    today = Date
+    If YearIn = Year(today) And MonthIn = Month(today) Then
+        TodayDay = Day(today)
     Else
         TodayDay = 0
     End If
@@ -1413,7 +1413,7 @@ Private Function GetSelectedDay(MonthIn As Long, YearIn As Long) As Long
     'Check if a selected date was provided by the user
     If SelectedDateIn <> 0 Then
         If MonthIn = Month(SelectedDateIn) And YearIn = Year(SelectedDateIn) Then
-            GetSelectedDay = day(SelectedDateIn)
+            GetSelectedDay = Day(SelectedDateIn)
         End If
     End If
 End Function
@@ -1426,19 +1426,19 @@ End Function
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Private Function Min(ParamArray values() As Variant) As Variant
    Dim minValue As Variant
-   Dim value As Variant
+   Dim Value As Variant
    minValue = values(0)
-   For Each value In values
-       If value < minValue Then minValue = value
+   For Each Value In values
+       If Value < minValue Then minValue = Value
    Next
    Min = minValue
 End Function
 Private Function Max(ParamArray values() As Variant) As Variant
    Dim maxValue As Variant
-   Dim value As Variant
+   Dim Value As Variant
    maxValue = values(0)
-   For Each value In values
-       If value > maxValue Then maxValue = value
+   For Each Value In values
+       If Value > maxValue Then maxValue = Value
    Next
    Max = maxValue
 End Function

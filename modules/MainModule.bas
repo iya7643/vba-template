@@ -15,6 +15,16 @@ Public Sub run()
     Call StaticModule.init
 
 On Error GoTo Except
+    ' 必須シートの存在チェックをします。
+    Dim sheet_name_key As Variant, sheet_name As String
+    For Each sheet_name_key In glob.consts.THIS_SHEET_NAMES
+        If glob.util.isExistsSheet(glob.consts.THIS_SHEET_NAMES(sheet_name_key)) = False Then
+            Call MsgBox(glob.consts.THIS_SHEET_NAMES(sheet_name_key) & "シートがありません。", vbExclamation + vbOKOnly)
+            GoTo Finally
+        End If
+    Next
+    
+    
     ' 処理1
 '    If MsgBox("1秒ごとに更新する例。よろしいですか？", vbInformation + vbYesNo) <> vbYes Then GoTo Finally
 '    Call glob.progress_bar_controller.start("1秒ごとに更新中")
@@ -71,7 +81,7 @@ On Error GoTo Except
     Dim i As Long, rng As Range
     Set rng = ActiveSheet.Range("A1")
     For i = 1 To 3000
-        rng.value = "更新中 " & Now
+        rng.Value = "更新中 " & Now
         rng.Font.Bold = True
         rng.Interior.Color = RGB(200, 230, 200)
 

@@ -1,9 +1,9 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} ProgressBarForm 
    ClientHeight    =   2040
-   ClientLeft      =   396
-   ClientTop       =   1236
-   ClientWidth     =   9336.001
+   ClientLeft      =   400
+   ClientTop       =   1240
+   ClientWidth     =   9330.001
    OleObjectBlob   =   "ProgressBarForm.frx":0000
 End
 Attribute VB_Name = "ProgressBarForm"
