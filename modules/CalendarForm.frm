@@ -2,9 +2,9 @@ VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} CalendarForm 
    Caption         =   "Select Date"
    ClientHeight    =   4032
-   ClientLeft      =   132
-   ClientTop       =   744
-   ClientWidth     =   5652
+   ClientLeft      =   156
+   ClientTop       =   828
+   ClientWidth     =   6780
    OleObjectBlob   =   "CalendarForm.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -628,7 +628,7 @@ Private Sub InitializeUserform(SelectedDate As Date, MinimumDate As Date, Maximu
         SelectedDateIn = SelectedDate
         SelectedYear = Year(SelectedDateIn)
         SelectedMonth = Month(SelectedDateIn)
-        SelectedDay = day(SelectedDateIn)
+        SelectedDay = Day(SelectedDateIn)
         Call SetSelectionLabel(SelectedDateIn)
     Else 'No SelectedDate provided, default to today's date
         cmdOkay.Enabled = False
@@ -745,7 +745,7 @@ Private Sub cmdToday_Click()
         cmdOkay.Enabled = True
         SelectedDateIn = TodayDate
         Call SetSelectionLabel(TodayDate)
-        SelectedDay = day(TodayDate)
+        SelectedDay = Day(TodayDate)
     End If
     
     'Get the month, day, and year, and set month scroll bar
@@ -1173,8 +1173,8 @@ Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
     'respectively, since dates will never fall outside those bounds
     MinDay = 0
     MaxDay = 32
-    If YearIn = Year(MinDate) And MonthIn = Month(MinDate) Then MinDay = day(MinDate)
-    If YearIn = Year(MaxDate) And MonthIn = Month(MaxDate) Then MaxDay = day(MaxDate)
+    If YearIn = Year(MinDate) And MonthIn = Month(MinDate) Then MinDay = Day(MinDate)
+    If YearIn = Year(MaxDate) And MonthIn = Month(MaxDate) Then MaxDay = Day(MaxDate)
     
     'Find previous month and next month. Handle January
     'and December appropriately
@@ -1186,13 +1186,13 @@ Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
     'Set min and max days for previous month and next month, if applicable
     PrevMonthMinDay = 0
     NextMonthMaxDay = 32
-    If YearIn = Year(MinDate) And PrevMonth = Month(MinDate) Then PrevMonthMinDay = day(MinDate)
-    If YearIn = Year(MaxDate) And NextMonth = Month(MaxDate) Then NextMonthMaxDay = day(MaxDate)
+    If YearIn = Year(MinDate) And PrevMonth = Month(MinDate) Then PrevMonthMinDay = Day(MinDate)
+    If YearIn = Year(MaxDate) And NextMonth = Month(MaxDate) Then NextMonthMaxDay = Day(MaxDate)
 
     'Find last day of selected month and previous month. Find first weekday
     'in current month, and index of Saturday and Sunday relative to first weekday
-    LastDayOfMonth = day(DateSerial(YearIn, MonthIn + 1, 0))
-    LastDayOfPrevMonth = day(DateSerial(YearIn, MonthIn, 0))
+    LastDayOfMonth = Day(DateSerial(YearIn, MonthIn + 1, 0))
+    LastDayOfPrevMonth = Day(DateSerial(YearIn, MonthIn, 0))
     StartDayOfWeek = Weekday(DateSerial(YearIn, MonthIn, 1), StartWeek)
     If StartWeek = 1 Then SundayIndex = 1 Else SundayIndex = 9 - StartWeek
     SaturdayIndex = 8 - StartWeek
@@ -1201,7 +1201,7 @@ Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
     'not, TodayDay is set to 0, since that value will never be encountered
     Today = Date
     If YearIn = Year(Today) And MonthIn = Month(Today) Then
-        TodayDay = day(Today)
+        TodayDay = Day(Today)
     Else
         TodayDay = 0
     End If
@@ -1413,7 +1413,7 @@ Private Function GetSelectedDay(MonthIn As Long, YearIn As Long) As Long
     'Check if a selected date was provided by the user
     If SelectedDateIn <> 0 Then
         If MonthIn = Month(SelectedDateIn) And YearIn = Year(SelectedDateIn) Then
-            GetSelectedDay = day(SelectedDateIn)
+            GetSelectedDay = Day(SelectedDateIn)
         End If
     End If
 End Function
