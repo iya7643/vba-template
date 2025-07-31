@@ -15,38 +15,6 @@ Public Sub run()
     Call StaticModule.init
 
 On Error GoTo Except
-    Dim obj As Object
-    Set obj = glob.json_helper.ParseJson("{""a"":123,""b"":[1,2,3,4],""c"":{""d"":456}}")
-    
-    
-    Dim json_str As String
-    json_str = glob.json_helper.ConvertToJson(obj)
-    Debug.Print json_str
-    
-    
-    Set obj = CreateObject("Scripting.Dictionary")
-    
-    obj.Add "a", New Collection
-    obj("a").Add CreateObject("Scripting.Dictionary")
-    obj("a").Item(1).Add "a1", "aaa"
-    obj("a").Item(1).Add "a2", 123
-    obj("a").Add New Collection
-    obj("a").Item(2).Add "aaa"
-    obj("a").Item(2).Add "bbb"
-    obj("a").Item(2).Add "ccc"
-    
-    obj.Add "b", CreateObject("Scripting.Dictionary")
-    obj("b").Add "b1", 123
-    obj("b").Add "b2", "bbbbb"
-    obj("b").Add "b3", CreateObject("Scripting.Dictionary")
-    obj("b")("b3").Add "c1", 123
-    obj("b")("b3").Add "c2", "ccccc"
-    
-    
-    
-    Debug.Print glob.json_helper.ConvertToJson(obj)
-    
-
     ' 処理1
 '    If MsgBox("1秒ごとに更新する例。よろしいですか？", vbInformation + vbYesNo) <> vbYes Then GoTo Finally
 '    Call glob.progress_bar_controller.start("1秒ごとに更新中")

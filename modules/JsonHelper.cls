@@ -51,6 +51,17 @@ Attribute VB_Exposed = False
 ' (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ' SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ '
+' Based on: VBA-JSON v2.3.1 by Tim Hall (https://github.com/VBA-tools/VBA-JSON)
+' Modified by: iya7643
+' Purpose: 参照設定を不要にして標準モジュールからクラスモジュールへ移行
+' Date: 2025-07-31
+' License: This modified version remains under the MIT License.
+'
+' Changes:
+' - クラスモジュールへ移行
+' - Dictionary から Scripting.Dictionary への明示的変更
+' - ParseJson() と ConvertToJson() 以外をPrivateへ変更
+' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ '
 Option Explicit
 
 ' === VBA-UTC Headers
