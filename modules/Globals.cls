@@ -22,6 +22,8 @@ Public progress_bar_controller As ProgressBarController
 Public progress_bar_next_run_time As Date
 Public progress_bar_active As Boolean
 
+Public api_holiday_jp As ApiHolidaysJp
+Public api_slack As ApiSlack
 
 Private Sub Class_Initialize()
     Set json_helper = New JsonHelper
@@ -29,6 +31,9 @@ Private Sub Class_Initialize()
     Call consts.init(json_helper)
     Set util = New Utility
     Set progress_bar_controller = New ProgressBarController
+
+    Set api_holiday_jp = New ApiHolidaysJp
+    Set api_slack = New ApiSlack
 End Sub
 
 Private Sub Class_Terminate()
@@ -36,5 +41,8 @@ Private Sub Class_Terminate()
     Set util = Nothing
     Set consts = Nothing
     Set progress_bar_controller = Nothing
+
+    Set api_holiday_jp = Nothing
+    Set api_slack = Nothing
 End Sub
 
