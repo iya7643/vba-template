@@ -17,14 +17,25 @@ Private Const MODULE_NAME = "Utility"
 '''''
 ' 最終行を取得します。
 '''''
-Public Function lastRow(ByVal ws As Worksheet, Optional ByVal col_letter As String = "") As Long
-    If col_letter = "" Then
-        lastRow = ws.Cells.Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
-    Else
-        Dim col_num As Long
-        col_num = ws.Range(col_letter & "1").Column
-        lastRow = ws.Cells(ws.Rows.Count, col_num).End(xlUp).Row
+Public Function lastRow(ByVal ws As Worksheet, Optional ByVal col_value As Variant) As Long
+    Dim result As Long: result = 1
+    
+    If IsMissing(col_value) Then
+        result = ws.Cells.Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+        GoTo Finally
     End If
+    
+    Dim col_num As Long
+    If IsNumeric(col_value) Then
+        col_num = CLng(col_value)
+    Else
+        col_num = ws.Range(col_value & "1").Column
+    End If
+    result = ws.Cells(ws.Rows.Count, col_num).End(xlUp).Row
+    
+Finally:
+    lastRow = result
+    
 End Function
 
 '''''
