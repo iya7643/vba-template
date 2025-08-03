@@ -4,3 +4,4 @@
 *.bas text working-tree-encoding=Shift_JIS
 *.cls text working-tree-encoding=Shift_JIS
 *.frm text working-tree-encoding=Shift_JIS
+*.frx binary

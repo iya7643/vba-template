@@ -73,6 +73,12 @@ End Type
 ' --------------------------------------------------
 ' Enum
 ' --------------------------------------------------
+Public Enum EnumCategory
+    WeekDayType_
+    ProgressBarType_
+    Position_
+End Enum
+
 Public Enum WeekDayType
     Sunday_ = 1 ' vbSunday
     Monday_ = 2
@@ -89,13 +95,16 @@ Public Enum ProgressBarType
     Both_
 End Enum
 
+Public Enum Position
+    Long_
+    Short_
+End Enum
+
 ' --------------------------------------------------
 ' Global変数
 ' --------------------------------------------------
 Public glob As Globals
 Public JsonOptions As json_Options
-' --------------------------------------------------
-
 
 Public Sub init()
     Set glob = New Globals
@@ -118,6 +127,38 @@ Public Sub updateProgressBar()
     glob.progress_bar_next_run_time = Now + TimeValue("00:00:01")
     Call Application.OnTime(glob.progress_bar_next_run_time, glob.consts.UPDATE_PROGRESS_BAR_PROC_NAME)
 End Sub
+
+
+Public Function EnumValue(ByVal category As EnumCategory, ByVal key As Long) As String
+    Select Case category
+        Case EnumCategory.WeekDayType_
+            Select Case key
+                Case WeekDayType.Sunday_: EnumValue = "日"
+                Case WeekDayType.Monday_: EnumValue = "月"
+                Case WeekDayType.Tuesday_: EnumValue = "火"
+                Case WeekDayType.Wednesday_: EnumValue = "水"
+                Case WeekDayType.Thursday_: EnumValue = "木"
+                Case WeekDayType.Friday_: EnumValue = "金"
+                Case WeekDayType.Saturday_: EnumValue = "土"
+                Case Else: Err.Raise vbObjectError + 1000, "EnumValue", "定義されていないkeyです。"
+            End Select
+        Case EnumCategory.ProgressBarType_
+            Select Case key
+                Case ProgressBarType.ProgressForm_: EnumValue = "進捗バーユーザーフォームのみ"
+                Case ProgressBarType.StatusBar_: EnumValue = "ステータスバーのみ"
+                Case ProgressBarType.Both_: EnumValue = "進捗バーユーザーフォームとステータスバーの両方"
+                Case Else: Err.Raise vbObjectError + 1000, "EnumValue", "定義されていないkeyです。"
+            End Select
+        Case EnumCategory.Position_
+            Select Case key
+                Case Position.Long_: EnumValue = "LONG"
+                Case Position.Short_: EnumValue = "SHORT"
+                Case Else: Err.Raise vbObjectError + 1000, "EnumValue", "定義されていないkeyです。"
+            End Select
+        Case Else
+            Err.Raise vbObjectError + 1000, "EnumValue", "定義されていないcategoryです。"
+    End Select
+End Function
 
 ' --------------------------------------------------
 ' Property
