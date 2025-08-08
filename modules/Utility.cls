@@ -318,6 +318,48 @@ Finally:
     ' NOTE: ActiveSheet.Range("A1").Resize(UBound(arr, 1), UBound(arr, 2)).Value = arr
 End Function
 
+''''
+' CSVを読み取ってCollection[Collection]で返却します。
+''''
+Public Function readCsv(ByVal file_path As String, ByVal csv_charset As String, Optional ByVal start_row_idx As Integer = 0) As Collection
+    Const PROC_NAME = MODULE_NAME & ".readCsv"
+    Dim records As New Collection
+
+On Error GoTo Except
+    Dim stm As Object: Set stm = CreateObject("ADODB.Stream")
+    Dim txt As String, lines As Variant, line As Variant, record As Collection
+    Dim row_idx As Long, col_idx As Long
+    With stm
+        .Charset = csv_charset
+        .Open
+        .LoadFromFile file_path
+        txt = .ReadText(-1)             ' -1: 現在のストリーム位置（Position）から末尾まで一気に文字列として取り込む。
+'        .Position = 0
+        lines = Split(txt, vbCrLf)
+        For row_idx = start_row_idx To UBound(lines)
+            line = Split(lines(row_idx), ",")
+            
+            Set record = New Collection
+            For col_idx = 0 To UBound(line)
+                record.Add line(col_idx)
+            Next
+            
+            records.Add record
+        Next
+        .Close
+    End With
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    Set readCsv = records
+
+End Function
+
+
 ' [VBA]OneDriveで同期しているファイルまたはフォルダのURLをローカルパスに変換する関数
 ' Copyright (c) 2020-2025  黒箱
 ' This software is released under the GPLv3.
