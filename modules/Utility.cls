@@ -49,7 +49,13 @@ Public Function lastCol(ByVal ws As Worksheet, Optional ByVal row_no As Long = 0
         Set rng = ws.UsedRange
     End If
     
-    lastCol = rng.Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByColumns, SearchDirection:=xlPrevious).Column
+    Dim last_cell As Range
+    Set last_cell = rng.Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByColumns, SearchDirection:=xlPrevious)
+    If last_cell Is Nothing Then
+        lastCol = 0
+    Else
+        lastCol = last_cell.Column
+    End If
 End Function
 
 '''''
@@ -301,21 +307,49 @@ Public Function nestedCollectionToArray(ByVal records As Collection, Optional By
     Next
     
     
-    Dim offset As Integer: offset = -1
+    Dim item_offset As Integer: item_offset = -1
     If is_start_one Then
-        offset = 0
+        item_offset = 0
     End If
     
-    ReDim result(1 + offset To records.Count + offset, 1 + offset To records(1).Count + offset)
-    For i = 1 To records.Count + offset
-        For j = 1 To records(1).Count + offset
-            result(i + offset, j + offset) = records.Item(i).Item(j)
+    ReDim result(1 + item_offset To records.Count + item_offset, 1 + item_offset To records(1).Count + item_offset)
+    For i = 1 To records.Count + item_offset
+        For j = 1 To records(1).Count + item_offset
+            result(i + item_offset, j + item_offset) = records.Item(i).Item(j)
         Next
     Next
     
 Finally:
     nestedCollectionToArray = result
     ' NOTE: ActiveSheet.Range("A1").Resize(UBound(arr, 1), UBound(arr, 2)).Value = arr
+End Function
+
+'''''
+' フォルダ選択ダイアログを表示して、選択したフォルダパスを返します。
+'''''
+Public Function selectDir(Optional ByVal is_multi_select = False) As String
+    Const PROC_NAME = MODULE_NAME & ".selectDir"
+    Dim dir_path As String: dir_path = ""
+
+On Error GoTo Except
+    Dim fd As FileDialog
+    Set fd = Application.FileDialog(msoFileDialogFolderPicker)
+    With fd
+        .title = "フォルダを選択してください。"
+        .AllowMultiSelect = is_multi_select
+        If .Show = -1 Then
+            dir_path = .SelectedItems(1)
+        End If
+    End With
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    selectDir = dir_path
+
 End Function
 
 ''''
