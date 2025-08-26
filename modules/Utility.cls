@@ -306,7 +306,6 @@ Public Function nestedCollectionToArray(ByVal records As Collection, Optional By
         End If
     Next
     
-    
     Dim item_offset As Integer: item_offset = -1
     If is_start_one Then
         item_offset = 0
@@ -355,31 +354,59 @@ End Function
 ''''
 ' CSVを読み取ってCollection[Collection]で返却します。
 ''''
-Public Function readCsv(ByVal file_path As String, ByVal csv_charset As String, Optional ByVal start_row_idx As Integer = 0) As Collection
+Public Function readCsv( _
+    ByVal file_path As String, ByVal csv_charset As String, _
+    Optional ByVal has_comma_in_value As Boolean = False, Optional ByVal start_row_idx As Integer = 0 _
+) As Collection
     Const PROC_NAME = MODULE_NAME & ".readCsv"
     Dim records As New Collection
 
 On Error GoTo Except
     Dim stm As Object: Set stm = CreateObject("ADODB.Stream")
-    Dim txt As String, lines As Variant, line As Variant, record As Collection
-    Dim row_idx As Long, col_idx As Long
+    Dim txt As String
     With stm
+        .Type = 2                       ' 1: バイナリ, 2: テキスト
         .Charset = csv_charset
         .Open
         .LoadFromFile file_path
         txt = .ReadText(-1)             ' -1: 現在のストリーム位置（Position）から末尾まで一気に文字列として取り込む。
 '        .Position = 0
+
+        If has_comma_in_value Then
+            Dim reg As Object
+            Set reg = CreateObject("VBScript.RegExp")
+            reg.Pattern = """[^""]*"""
+            reg.Global = True
+            
+            Dim m As Object
+            For Each m In reg.Execute(txt)
+                txt = Replace(txt, m.Value, Replace(m.Value, ",", "#####"))
+            Next
+        End If
+        
+        Dim lines As Variant
         lines = Split(txt, vbCrLf)
+        
+        Dim row_idx As Long, col_idx As Long, line As Variant, record As Collection
         For row_idx = start_row_idx To UBound(lines)
+            If Trim(lines(row_idx)) = "" Then GoTo ContinueForRowIdx
+            
             line = Split(lines(row_idx), ",")
             
             Set record = New Collection
             For col_idx = 0 To UBound(line)
-                record.Add line(col_idx)
+                If has_comma_in_value Then
+                    record.Add Replace(line(col_idx), "#####", ",")
+                Else
+                    record.Add line(col_idx)
+                End If
             Next
             
             records.Add record
+        
+ContinueForRowIdx:
         Next
+        
         .Close
     End With
     
@@ -392,6 +419,55 @@ Finally:
     Set readCsv = records
 
 End Function
+
+'''''
+' シートのオートフィルターがセットされている行を取得して、解除します。
+'''''
+Public Function clearAutoFilter(ByVal ws As Worksheet) As Long
+    Const PROC_NAME = MODULE_NAME & ".clearAutoFilter"
+    Dim filter_row_no As Long
+    filter_row_no = 0
+
+On Error GoTo Except
+    If ws.AutoFilterMode = False Then GoTo Finally
+    
+    filter_row_no = ws.AutoFilter.Range.Rows(1).Row
+    
+    ws.AutoFilterMode = False
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    clearAutoFilter = filter_row_no
+
+End Function
+
+'''''
+' シートのオートフィルターをセットします。
+'''''
+Public Sub setAutoFilter(ByVal ws As Worksheet, ByVal filter_row_no As Long)
+    Const PROC_NAME = MODULE_NAME & ".setAutoFilter"
+
+On Error GoTo Except
+    Dim last_row As Long, last_col As Long
+    last_row = lastRow(ws)
+    last_col = lastCol(ws)
+    
+    ws.Range("A" & filter_row_no & ":" & ws.Cells(last_row, last_col).Address).AutoFilter
+    
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+
+End Sub
+
 
 
 ' [VBA]OneDriveで同期しているファイルまたはフォルダのURLをローカルパスに変換する関数
