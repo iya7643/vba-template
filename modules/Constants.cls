@@ -44,8 +44,8 @@ Private Sub Class_Initialize()
 End Sub
 
 Public Sub init(ByVal json_helper As JsonHelper)
-    Set WEEKDAY_JP = json_helper.ParseJson(Replace(WEEKDAY_JP_JSON, "'", DBL_QUOTE))
-    Set COL_LETTERS = json_helper.ParseJson(Replace(COL_LETTERS_JSON, "'", DBL_QUOTE))
+    Set WEEKDAY_JP = json_helper.ParseJson(Replace(WEEKDAY_JP_JSON, SL_QUOTE, DBL_QUOTE))
+    Set COL_LETTERS = json_helper.ParseJson(Replace(COL_LETTERS_JSON, SL_QUOTE, DBL_QUOTE))
 End Sub
 
 Private Sub Class_Terminate()
