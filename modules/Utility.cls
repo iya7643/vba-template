@@ -519,6 +519,120 @@ Finally:
 
 End Sub
 
+'''''
+' ADODBでSQLを発行します。
+'''''
+Public Function query(ByVal wb_path As String, ByVal sql As String) As Collection
+    Const PROC_NAME = MODULE_NAME & ".query"
+    Const AD_ASYNC_CONNECTION As Long = 16
+    Const AD_STATE_OPEN As Long = 1
+    Const AD_OPEN_STATIC As Long = 3
+    Const AD_LOCK_READONLY As Long = 1
+    Const AD_USE_CLIENT As Long = 3
+    
+    Dim result As New Collection
+    Dim is_thisworkbook As Boolean: is_thisworkbook = False
+    Dim conn As Object: Set conn = CreateObject("ADODB.Connection")
+    Dim rs As Object: Set rs = CreateObject("ADODB.RecordSet")
+
+On Error GoTo Except
+    Dim data_src_path As String
+    data_src_path = wb_path
+    
+    ' ThisWorkbookだと接続が不安定なため、TEMPディレクトリにコピーしてそこから読み取ります。
+    If StrComp(wb_path, ThisWorkbook.FullName, vbTextCompare) = 0 Then
+        is_thisworkbook = True
+        data_src_path = Environ$("TEMP") & "¥ado_tmp_" & Format(Now, "yyyymmdd_hhnnss") & ".xlsx"
+        ThisWorkbook.SaveCopyAs data_src_path
+        SetAttr data_src_path, vbReadOnly
+    End If
+
+    Dim cs As String
+    cs = "Provider=Microsoft.ACE.OLEDB.12.0;" & _
+        "Data Source=" & data_src_path & ";" & _
+        "Extended Properties=""Excel 12.0 Xml;HDR=YES;IMEX=1;ReadOnly=1"";"
+        
+    conn.ConnectionTimeout = 30
+    conn.CommandTimeout = 60
+    conn.Open cs, , , AD_ASYNC_CONNECTION
+    
+    Dim t0 As Date: t0 = Now
+    Do While conn.State <> AD_STATE_OPEN
+        DoEvents
+        If DateDiff("s", t0, Now) > 30 Then Err.Raise vbObjectError + 513, PROC_NAME, "Connection open timeout."
+    Loop
+    
+    rs.CursorLocation = AD_USE_CLIENT
+    rs.Open sql, conn, AD_OPEN_STATIC, AD_LOCK_READONLY
+    
+    If rs.EOF And rs.BOF Then
+        rs.Close: Set rs = Nothing
+        conn.Close: Set conn = Nothing
+        GoTo Finally
+    End If
+    
+    Dim field_names As New Collection
+    Dim i As Long
+    For i = 1 To rs.Fields.Count
+        field_names.Add rs.Fields(i - 1).Name
+    Next
+    
+    AdodbTempSheet.Cells.ClearContents
+    AdodbTempSheet.Range("A1").CopyFromRecordset rs
+    
+    Set rs.ActiveConnection = Nothing
+    rs.Close: Set rs = Nothing
+    conn.Close: Set conn = Nothing
+    
+    Dim last_row As Long
+    last_row = lastRow(AdodbTempSheet)
+    
+    Dim data As Variant
+    data = AdodbTempSheet.Range( _
+        "A1:" & AdodbTempSheet.Cells(last_row, field_names.Count).Address _
+    ).Value
+    
+    Dim row_no As Long, col_no As Long, record As Object
+    For row_no = 1 To UBound(data, 1)
+        Set record = CreateObject("Scripting.Dictionary")
+        For col_no = 1 To UBound(data, 2)
+            record.Add field_names(col_no), data(row_no, col_no)
+        Next
+        result.Add record
+    Next
+    
+    AdodbTempSheet.Cells.ClearContents
+    
+    If is_thisworkbook Then
+        Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
+        Call fso.deleteFile(data_src_path, True)
+    End If
+    
+    GoTo Finally
+
+Except:
+    If Not rs Is Nothing Then
+        If rs.State <> 0 Then rs.Close
+        Set rs = Nothing
+    End If
+    If Not conn Is Nothing Then
+        If conn.State <> 0 Then conn.Close
+        Set conn = Nothing
+    End If
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    Set query = result
+
+'    Dim sql As String
+'    sql = ""
+'    sql = sql & "SELECT A.ID, A.ValueA1, B.ValueB2, C.ValueC3, D.ValueD3 "
+'    sql = sql & "FROM ((([Sheet1$] A "
+'    sql = sql & "INNER JOIN [Sheet2$] B ON A.ID = B.ID) "
+'    sql = sql & "INNER JOIN [Sheet3$] C ON B.ID = C.ID) "
+'    sql = sql & "INNER JOIN [Sheet4$] D ON C.ID = D.ID) "
+
+End Function
 
 
 ' [VBA]OneDriveで同期しているファイルまたはフォルダのURLをローカルパスに変換する関数
