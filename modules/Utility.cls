@@ -92,6 +92,33 @@ Finally:
 End Function
 
 '''''
+' すべてのシートがあるかチェックします。
+'''''
+Public Function isExistsSheets(ByVal sheet_names As Variant) As Boolean
+    Const PROC_NAME = MODULE_NAME & ".isExistsSheets"
+    Dim ws As Worksheet
+    Dim is_exists As Boolean: is_exists = True
+    
+On Error GoTo Except
+    Dim sheet_name As Variant
+    For Each sheet_name In sheet_names
+        If Not isExistsSheet(sheet_name) Then
+            is_exists = False
+            Exit For
+        End If
+    Next
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    isExistsSheets = is_exists
+
+End Function
+
+'''''
 ' フォルダがあるかチェックします。
 '''''
 Public Function isExistsFolder(ByVal path As String) As Boolean
@@ -123,6 +150,30 @@ Public Function isFileOpen(ByVal file_path As String) As Boolean
     End If
     On Error GoTo 0
 End Function
+
+'''''
+' ファイルを移動します。
+'''''
+Public Sub moveFile(ByVal src_file_path, ByVal dst_dir_path, Optional is_overwrite = True)
+    Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
+    
+    Dim file_name As Variant, dst_file_path As String
+    file_name = Split(src_file_path, "¥")
+    file_name = file_name(UBound(file_name))
+    
+    If Right(dst_dir_path, 1) = "¥" Then
+        dst_file_path = dst_dir_path & file_name
+    Else
+        dst_file_path = dst_dir_path & "¥" & file_name
+    End If
+    
+    If is_overwrite Then
+        If fso.FileExists(dst_file_path) Then Call fso.deleteFile(dst_file_path, True)
+    End If
+    
+    Call fso.moveFile(src_file_path, dst_file_path)
+
+End Sub
 
 '''''
 ' 非表示で別のブックを開きます。
