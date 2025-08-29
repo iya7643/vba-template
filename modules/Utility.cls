@@ -185,9 +185,9 @@ Public Function openBookInvisible(ByVal file_path As String, Optional ByVal pass
         Set wb = Workbooks(Dir(file_path))
     Else
         If pass = "" Then
-            Set wb = Workbooks.Open(Filename:=file_path, ReadOnly:=True)
+            Set wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True)
         Else
-            Set wb = Workbooks.Open(Filename:=file_path, ReadOnly:=True, Password:=pass)
+            Set wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True, Password:=pass)
         End If
     End If
     wb.Windows(1).Visible = False
@@ -499,7 +499,7 @@ End Function
 '''''
 ' シートのオートフィルターをセットします。
 '''''
-Public Sub setAutoFilter(ByVal ws As Worksheet, ByVal filter_row_no As Long)
+Public Sub setAutoFilter(ByVal ws As Worksheet, ByVal filter_row_no As Long, Optional ByVal filter_col_no_from = 1)
     Const PROC_NAME = MODULE_NAME & ".setAutoFilter"
 
 On Error GoTo Except
@@ -507,7 +507,7 @@ On Error GoTo Except
     last_row = lastRow(ws)
     last_col = lastCol(ws)
     
-    ws.Range("A" & filter_row_no & ":" & ws.Cells(last_row, last_col).Address).AutoFilter
+    ws.Range(ws.Cells(filter_row_no, filter_col_no_from), ws.Cells(last_row, last_col).Address).AutoFilter
     
     
     GoTo Finally
@@ -522,7 +522,7 @@ End Sub
 '''''
 ' ADODBでSQLを発行します。
 '''''
-Public Function query(ByVal wb_path As String, ByVal sql As String) As Collection
+Public Function query(ByVal wb_path As String, ByVal sql As String, ByVal tmp_ws As Worksheet) As Collection
     Const PROC_NAME = MODULE_NAME & ".query"
     Const AD_ASYNC_CONNECTION As Long = 16
     Const AD_STATE_OPEN As Long = 1
@@ -577,8 +577,8 @@ On Error GoTo Except
         field_names.Add rs.Fields(i - 1).Name
     Next
     
-    AdodbTempSheet.Cells.ClearContents
-    AdodbTempSheet.Range("A1").CopyFromRecordset rs
+    tmp_ws.Cells.ClearContents
+    tmp_ws.Range("A1").CopyFromRecordset rs
     
     Set rs.ActiveConnection = Nothing
     rs.Close: Set rs = Nothing
@@ -588,7 +588,7 @@ On Error GoTo Except
     last_row = lastRow(AdodbTempSheet)
     
     Dim data As Variant
-    data = AdodbTempSheet.Range( _
+    data = tmp_ws.Range( _
         "A1:" & AdodbTempSheet.Cells(last_row, field_names.Count).Address _
     ).Value
     
@@ -601,7 +601,7 @@ On Error GoTo Except
         result.Add record
     Next
     
-    AdodbTempSheet.Cells.ClearContents
+    tmp_ws.Cells.ClearContents
     
     If is_thisworkbook Then
         Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
