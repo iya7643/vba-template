@@ -34,7 +34,7 @@ End Sub
 ' 祝日一覧を取得します。
 '''''
 Public Function fetch() As Object
-    Const PROC_NAME = MODULE_NAME & ".tokenAuthUser"
+    Const PROC_NAME = MODULE_NAME & ".fetch"
     Dim holidays As Object
     Set holidays = CreateObject("Scripting.Dictionary")
 
