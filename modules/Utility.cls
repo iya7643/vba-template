@@ -226,6 +226,10 @@ End Sub
 ' 非表示で別のブックを開きます。
 '''''
 Public Function openBookInvisible(ByVal file_path As String, Optional ByVal pass As String = "") As Workbook
+    Dim prev_sec As Long
+    prev_sec = Application.AutomationSecurity
+
+    Application.AutomationSecurity = 3  ' msoAutomationSecurityForceDisable
     Dim wb As Workbook
     
     If isFileOpen(file_path) Then
@@ -240,6 +244,7 @@ Public Function openBookInvisible(ByVal file_path As String, Optional ByVal pass
     wb.Windows(1).Visible = False
     
     Set openBookInvisible = wb
+    Application.AutomationSecurity = prev_sec
 End Function
 
 '''''
