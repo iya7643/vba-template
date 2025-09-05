@@ -176,7 +176,7 @@ Public Function ConvertToJson(ByVal JsonValue As Variant, Optional ByVal Whitesp
     Dim json_LBound2D As Long
     Dim json_UBound2D As Long
     Dim json_IsFirstItem2D As Boolean
-    Dim json_Key As Variant
+    Dim json_key As Variant
     Dim json_Value As Variant
     Dim json_DateStr As String
     Dim json_Converted As String
@@ -331,11 +331,11 @@ Public Function ConvertToJson(ByVal JsonValue As Variant, Optional ByVal Whitesp
         ' Dictionary
         If VBA.TypeName(JsonValue) = "Dictionary" Then
             json_BufferAppend json_Buffer, "{", json_BufferPosition, json_BufferLength
-            For Each json_Key In JsonValue.keys
+            For Each json_key In JsonValue.Keys
                 ' For Objects, undefined (Empty/Nothing) is not added to object
-                json_Converted = ConvertToJson(JsonValue(json_Key), Whitespace, json_CurrentIndentation + 1)
+                json_Converted = ConvertToJson(JsonValue(json_key), Whitespace, json_CurrentIndentation + 1)
                 If json_Converted = "" Then
-                    json_SkipItem = json_IsUndefined(JsonValue(json_Key))
+                    json_SkipItem = json_IsUndefined(JsonValue(json_key))
                 Else
                     json_SkipItem = False
                 End If
@@ -348,14 +348,14 @@ Public Function ConvertToJson(ByVal JsonValue As Variant, Optional ByVal Whitesp
                     End If
 
                     If json_PrettyPrint Then
-                        json_Converted = vbNewLine & json_Indentation & """" & json_Key & """: " & json_Converted
+                        json_Converted = vbNewLine & json_Indentation & """" & json_key & """: " & json_Converted
                     Else
-                        json_Converted = """" & json_Key & """:" & json_Converted
+                        json_Converted = """" & json_key & """:" & json_Converted
                     End If
 
                     json_BufferAppend json_Buffer, json_Converted, json_BufferPosition, json_BufferLength
                 End If
-            Next json_Key
+            Next json_key
 
             If json_PrettyPrint Then
                 json_BufferAppend json_Buffer, vbNewLine, json_BufferPosition, json_BufferLength
@@ -427,7 +427,7 @@ End Function
 ' ============================================= '
 
 Private Function json_ParseObject(json_String As String, ByRef json_Index As Long) As Object
-    Dim json_Key As String
+    Dim json_key As String
     Dim json_NextChar As String
 
     Set json_ParseObject = CreateObject("Scripting.Dictionary")
@@ -447,12 +447,12 @@ Private Function json_ParseObject(json_String As String, ByRef json_Index As Lon
                 json_SkipSpaces json_String, json_Index
             End If
 
-            json_Key = json_ParseKey(json_String, json_Index)
+            json_key = json_ParseKey(json_String, json_Index)
             json_NextChar = json_Peek(json_String, json_Index)
             If json_NextChar = "[" Or json_NextChar = "{" Then
-                Set json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
+                Set json_ParseObject.Item(json_key) = json_ParseValue(json_String, json_Index)
             Else
-                json_ParseObject.Item(json_Key) = json_ParseValue(json_String, json_Index)
+                json_ParseObject.Item(json_key) = json_ParseValue(json_String, json_Index)
             End If
         Loop
     End If

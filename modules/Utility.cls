@@ -121,15 +121,62 @@ End Function
 '''''
 ' フォルダがあるかチェックします。
 '''''
-Public Function isExistsFolder(ByVal path As String) As Boolean
-    isExistsFolder = (Dir(path, vbDirectory) <> "")
+Public Function isExistsFolder(ByVal dir_path As String) As Boolean
+    isExistsFolder = (Dir(dir_path, vbDirectory) <> "")
 End Function
 
 '''''
 ' ファイルがあるかチェックします。
 '''''
-Public Function isExistsFile(ByVal path As String) As Boolean
-    isExistsFile = (Dir(path, vbNormal) <> "")
+Public Function isExistsFile(ByVal file_path As String) As Boolean
+    isExistsFile = (Dir(file_path, vbNormal) <> "")
+End Function
+
+'''''
+' フォルダパスとファイル名の正規表現から、該当するファイルのパスを取得します。
+' @return array[エラーメッセージ, ファイルパス]
+'''''
+Public Function getFileByFilePattern(ByVal dir_path As String, ByVal file_pattern As String) As Variant
+    Const PROC_NAME = MODULE_NAME & ".getFileByFilePattern"
+    Dim result As Variant
+
+On Error GoTo Except
+    Dim target_dir_path As String
+    target_dir_path = OneDriveUrlToLocalPath(dir_path)
+    target_dir_path = IIf(Right(target_dir_path, 1) = "¥", Left(target_dir_path, Len(target_dir_path) - 1), target_dir_path)
+    If Not glob.util.isExistsFolder(target_dir_path) Then
+        result = Array("以下のフォルダが存在しません。" & vbCrLf & target_dir_path, "")
+        GoTo Finally
+    End If
+
+    Dim fso As Object, folder As Object, regex As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set folder = fso.GetFolder(dir_path)
+    Set regex = CreateObject("VBScript.RegExp")
+    regex.Pattern = file_pattern
+    regex.Global = False
+    regex.IgnoreCase = True
+    
+    Dim file As Object
+    For Each file In folder.Files
+        If regex.Test(file.Name) Then Exit For
+    Next
+    
+    If file Is Nothing Then
+        result = Array("ファイル名が以下のパターンのファイルがありません。" & vbCrLf & regex.Pattern, "")
+        GoTo Finally
+    End If
+    
+    result = Array("", file.Path)
+    
+    GoTo Finally
+    
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+    
+Finally:
+    getFileByFilePattern = result
+    
 End Function
 
 '''''
@@ -208,18 +255,18 @@ End Sub
 '''''
 ' Dictionaryの値をキーの配列から取得します。
 '''''
-Public Function dictor(ByVal dict As Object, ByVal keys As Variant)
+Public Function dictor(ByVal dict As Object, ByVal dict_keys As Variant)
     Const PROC_NAME = MODULE_NAME & ".dictor"
     Dim i As Integer, key As Variant, tmp As Object
     
 On Error GoTo Except
     Set tmp = dict
-    For i = 0 To UBound(keys) - 1
-        key = keys(i)
+    For i = 0 To UBound(dict_keys) - 1
+        key = dict_keys(i)
         Set tmp = tmp.Item(key)
     Next
 
-    key = keys(UBound(keys))
+    key = dict_keys(UBound(dict_keys))
     If VarType(tmp.Item(key)) = vbObject Then
         Set dictor = tmp.Item(key)
     Else
@@ -585,11 +632,11 @@ On Error GoTo Except
     conn.Close: Set conn = Nothing
     
     Dim last_row As Long
-    last_row = lastRow(AdodbTempSheet)
+    last_row = lastRow(tmp_ws)
     
     Dim data As Variant
     data = tmp_ws.Range( _
-        "A1:" & AdodbTempSheet.Cells(last_row, field_names.Count).Address _
+        "A1:" & tmp_ws.Cells(last_row, field_names.Count).Address _
     ).Value
     
     Dim row_no As Long, col_no As Long, record As Object
