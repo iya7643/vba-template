@@ -25,19 +25,20 @@ Private Const WEEKDAY_JP_JSON = "{" & _
     " '" & vbThursday & "': '木', " & _
     " '" & vbFriday & "': '金', " & _
     " '" & vbSaturday & "': '土' " & _
-    "}"
+"}"
 
-Public COL_LETTERS As Object
-Private Const COL_LETTERS_JSON = "{" & _
-    " 'LONG': { " & _
-        " 'SRC': { 'SYMBOL': 'U', 'NOTIONAL': 'V' }, " & _
-        " 'DST': { 'SYMBOL': 'Z', 'NOTIONAL': 'AA' } " & _
-    " }, " & _
-    " 'SHORT': { " & _
-        " 'SRC': { 'SYMBOL': 'U', 'NOTIONAL': 'V' }, " & _
-        " 'DST': { 'SYMBOL': 'Z', 'NOTIONAL': 'AA' } " & _
-    " } " & _
-    "}"
+Public THIS_SHEET_NAMES As Object
+Private Const THIS_SHEET_NAMES_JSON = "{" & _
+    " 'BELL': 'Pr', " & _
+    " 'MARKET_INDEX': '指数一覧' " & _
+"}"
+
+Public FILE_PATTERNS As Object
+Private Const FILE_PATTERNS_JSON = "{" & _
+    " 'PHILIP': '^504890047_BELL INVESTMENTS_¥¥d{8}¥¥.xlsx$', " & _
+    " 'TORA': '^EOD_REPORT_BELLINVEST_Phillip_¥¥d{8}¥¥.csv$' " & _
+"}"
+
 
 Private Sub Class_Initialize()
     UPDATE_PROGRESS_BAR_PROC_NAME = "updateProgressBar"
@@ -45,10 +46,12 @@ End Sub
 
 Public Sub init(ByVal json_helper As JsonHelper)
     Set WEEKDAY_JP = json_helper.ParseJson(Replace(WEEKDAY_JP_JSON, SL_QUOTE, DBL_QUOTE))
-    Set COL_LETTERS = json_helper.ParseJson(Replace(COL_LETTERS_JSON, SL_QUOTE, DBL_QUOTE))
+    Set THIS_SHEET_NAMES = json_helper.ParseJson(Replace(THIS_SHEET_NAMES_JSON, SL_QUOTE, DBL_QUOTE))
+    Set FILE_PATTERNS = json_helper.ParseJson(Replace(FILE_PATTERNS_JSON, SL_QUOTE, DBL_QUOTE))
 End Sub
 
 Private Sub Class_Terminate()
-    Set COL_LETTERS = Nothing
+    Set THIS_SHEET_NAMES = Nothing
+    Set FILE_PATTERNS = Nothing
 End Sub
 
