@@ -572,6 +572,42 @@ Finally:
 End Sub
 
 '''''
+' 指定した日付のn営業日前/後の日付を取得します。
+'''''
+Public Function getBusinessDateOffset(ByVal base_date As Date, ByVal offset_day As Integer, ByVal holidays As Object) As Date
+    Const PROC_NAME = MODULE_NAME & ".getBusinessDateOffset"
+    Dim result As Date
+    
+On Error GoTo Except
+    result = base_date
+    
+    Dim day_diff As Integer: day_diff = 0
+    Do While day_diff < Abs(offset_day)
+        result = IIf(offset_day < 0, DateAdd("d", -1, result), DateAdd("d", 1, result))
+        
+        Select Case Weekday(result, vbSunday)
+            Case WeekDayType.Saturday_, WeekDayType.Sunday_: GoTo ContinueWhileDate
+            Case Else
+                If holidays.Exists(Format(result, "yyyy-mm-dd")) Then GoTo ContinueWhileDate
+        End Select
+        
+        day_diff = day_diff + 1
+    
+ContinueWhileDate:
+    Loop
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    getBusinessDateOffset = result
+
+End Function
+
+
+'''''
 ' ADODBでSQLを発行します。
 '''''
 Public Function query(ByVal wb_path As String, ByVal sql As String, ByVal tmp_ws As Worksheet) As Collection
