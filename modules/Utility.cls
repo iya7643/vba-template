@@ -143,7 +143,7 @@ Public Function getFileByFilePattern(ByVal dir_path As String, ByVal file_patter
 On Error GoTo Except
     Dim target_dir_path As String
     target_dir_path = OneDriveUrlToLocalPath(dir_path)
-    target_dir_path = IIf(Right(target_dir_path, 1) = "¥", Left(target_dir_path, Len(target_dir_path) - 1), target_dir_path)
+    target_dir_path = IIf(Right(target_dir_path, 1) = "\", Left(target_dir_path, Len(target_dir_path) - 1), target_dir_path)
     If Not glob.util.isExistsFolder(target_dir_path) Then
         result = Array("以下のフォルダが存在しません。" & vbCrLf & target_dir_path, "")
         GoTo Finally
@@ -205,13 +205,13 @@ Public Sub moveFile(ByVal src_file_path, ByVal dst_dir_path, Optional is_overwri
     Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
     
     Dim file_name As Variant, dst_file_path As String
-    file_name = Split(src_file_path, "¥")
+    file_name = Split(src_file_path, "\")
     file_name = file_name(UBound(file_name))
     
-    If Right(dst_dir_path, 1) = "¥" Then
+    If Right(dst_dir_path, 1) = "\" Then
         dst_file_path = dst_dir_path & file_name
     Else
-        dst_file_path = dst_dir_path & "¥" & file_name
+        dst_file_path = dst_dir_path & "\" & file_name
     End If
     
     If is_overwrite Then
@@ -630,7 +630,7 @@ On Error GoTo Except
     ' ThisWorkbookだと接続が不安定なため、TEMPディレクトリにコピーしてそこから読み取ります。
     If StrComp(wb_path, ThisWorkbook.FullName, vbTextCompare) = 0 Then
         is_thisworkbook = True
-        data_src_path = Environ$("TEMP") & "¥ado_tmp_" & Format(Now, "yyyymmdd_hhnnss") & ".xlsx"
+        data_src_path = Environ$("TEMP") & "\ado_tmp_" & Format(Now, "yyyymmdd_hhnnss") & ".xlsx"
         ThisWorkbook.SaveCopyAs data_src_path
         SetAttr data_src_path, vbReadOnly
     End If
