@@ -250,7 +250,7 @@ End Function
 '''''
 ' ブックを閉じます。
 '''''
-Public Sub closeBook(ByVal wb As Workbook)
+Public Sub closeBook(ByRef wb As Workbook)
     Application.DisplayAlerts = False
     wb.Close SaveChanges:=False
     Set wb = Nothing
