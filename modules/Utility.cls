@@ -202,23 +202,29 @@ End Function
 ' ファイルを移動します。
 '''''
 Public Sub moveFile(ByVal src_file_path, ByVal dst_dir_path, Optional is_overwrite = True)
+    Const PROC_NAME = MODULE_NAME & ".moveFile"
+
+On Error GoTo Except
     Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
     
     Dim file_name As Variant, dst_file_path As String
     file_name = Split(src_file_path, "¥")
     file_name = file_name(UBound(file_name))
     
-    If Right(dst_dir_path, 1) = "¥" Then
-        dst_file_path = dst_dir_path & file_name
-    Else
-        dst_file_path = dst_dir_path & "¥" & file_name
-    End If
+    dst_file_path = dst_dir_path & IIf(Right(dst_dir_path, 1) = "¥", file_name, "¥" & file_name)
     
     If is_overwrite Then
         If fso.FileExists(dst_file_path) Then Call fso.deleteFile(dst_file_path, True)
     End If
     
     Call fso.moveFile(src_file_path, dst_file_path)
+    
+    GoTo Finally
+    
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+    
+Finally:
 
 End Sub
 
@@ -229,7 +235,7 @@ Public Function openBookInvisible(ByVal file_path As String, Optional ByVal pass
     Dim prev_sec As Long
     prev_sec = Application.AutomationSecurity
 
-    Application.AutomationSecurity = 3  ' msoAutomationSecurityForceDisable
+    Application.AutomationSecurity = msoAutomationSecurityForceDisable
     Dim wb As Workbook
     
     If isFileOpen(file_path) Then
@@ -405,14 +411,12 @@ Public Function nestedCollectionToArray(ByVal records As Collection, Optional By
     col_count = records(1).Count
     For i = 1 To records.Count
         If col_count <> records.Item(i).Count Then
-            Err.Raise 999, "", "inner collectionの要素数が行によって異なります。"
+            Err.Raise vbObjectError, "", "inner collectionの要素数が行によって異なります。"
         End If
     Next
     
     Dim item_offset As Integer: item_offset = -1
-    If is_start_one Then
-        item_offset = 0
-    End If
+    If is_start_one Then item_offset = 0
     
     ReDim result(1 + item_offset To records.Count + item_offset, 1 + item_offset To records(1).Count + item_offset)
     For i = 1 To records.Count + item_offset
@@ -429,7 +433,7 @@ End Function
 '''''
 ' フォルダ選択ダイアログを表示して、選択したフォルダパスを返します。
 '''''
-Public Function selectDir(Optional ByVal is_multi_select = False) As String
+Public Function selectDir() As String
     Const PROC_NAME = MODULE_NAME & ".selectDir"
     Dim dir_path As String: dir_path = ""
 
@@ -438,10 +442,8 @@ On Error GoTo Except
     Set fd = Application.FileDialog(msoFileDialogFolderPicker)
     With fd
         .title = "フォルダを選択してください。"
-        .AllowMultiSelect = is_multi_select
-        If .Show = -1 Then
-            dir_path = .SelectedItems(1)
-        End If
+        .AllowMultiSelect = False
+        If .Show = -1 Then dir_path = .SelectedItems(1)
     End With
     
     GoTo Finally
@@ -451,6 +453,65 @@ Except:
 
 Finally:
     selectDir = dir_path
+
+End Function
+
+'''''
+' ファイル選択ダイアログを表示して、選択したファイルパスを返します。
+'''''
+Public Function selectFile() As String
+    Const PROC_NAME = MODULE_NAME & ".selectFile"
+    Dim file_path As String: file_path = ""
+
+On Error GoTo Except
+    Dim fd As FileDialog
+    Set fd = Application.FileDialog(msoFileDialogFilePicker)
+    With fd
+        .title = "ファイルを選択してください。"
+        .Filters.Clear
+        .AllowMultiSelect = False
+        If .Show = -1 Then file_path = .SelectedItems(1)
+    End With
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    selectFile = file_path
+
+End Function
+
+'''''
+' ファイル選択ダイアログを表示して、選択したファイルパスを返します（複数）。
+'''''
+Public Function selectFiles() As Collection
+    Const PROC_NAME = MODULE_NAME & ".selectFiles"
+    Dim file_paths As New Collection
+
+On Error GoTo Except
+    Dim fd As FileDialog
+    Set fd = Application.FileDialog(msoFileDialogFilePicker)
+    With fd
+        .title = "ファイルを選択してください。"
+        .Filters.Clear
+        .AllowMultiSelect = True
+        If .Show = -1 Then
+            Dim Item As Variant
+            For Each Item In .SelectedItems
+                file_paths.Add Item
+            Next
+        End If
+    End With
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    Set selectFiles = file_paths
 
 End Function
 
@@ -468,7 +529,7 @@ On Error GoTo Except
     Dim stm As Object: Set stm = CreateObject("ADODB.Stream")
     Dim txt As String
     With stm
-        .Type = 2                       ' 1: バイナリ, 2: テキスト
+        .Type = AdType.Text_
         .Charset = csv_charset
         .Open
         .LoadFromFile file_path
@@ -561,7 +622,6 @@ On Error GoTo Except
     
     ws.Range(ws.Cells(filter_row_no, filter_col_no_from), ws.Cells(last_row, last_col).Address).AutoFilter
     
-    
     GoTo Finally
 
 Except:
@@ -606,17 +666,11 @@ Finally:
 
 End Function
 
-
 '''''
 ' ADODBでSQLを発行します。
 '''''
 Public Function query(ByVal wb_path As String, ByVal sql As String, ByVal tmp_ws As Worksheet) As Collection
     Const PROC_NAME = MODULE_NAME & ".query"
-    Const AD_ASYNC_CONNECTION As Long = 16
-    Const AD_STATE_OPEN As Long = 1
-    Const AD_OPEN_STATIC As Long = 3
-    Const AD_LOCK_READONLY As Long = 1
-    Const AD_USE_CLIENT As Long = 3
     
     Dim result As New Collection
     Dim is_thisworkbook As Boolean: is_thisworkbook = False
@@ -642,16 +696,16 @@ On Error GoTo Except
         
     conn.ConnectionTimeout = 30
     conn.CommandTimeout = 60
-    conn.Open cs, , , AD_ASYNC_CONNECTION
+    conn.Open cs, , , AdConnectOption.AsyncConnect_
     
     Dim t0 As Date: t0 = Now
-    Do While conn.State <> AD_STATE_OPEN
+    Do While conn.State <> AdConnectionState.Open_
         DoEvents
         If DateDiff("s", t0, Now) > 30 Then Err.Raise vbObjectError + 513, PROC_NAME, "Connection open timeout."
     Loop
     
-    rs.CursorLocation = AD_USE_CLIENT
-    rs.Open sql, conn, AD_OPEN_STATIC, AD_LOCK_READONLY
+    rs.CursorLocation = AdCursorLocation.UseClient_
+    rs.Open sql, conn, AdCursorType.Static_, AdLock.ReadOnly_
     
     If rs.EOF And rs.BOF Then
         rs.Close: Set rs = Nothing

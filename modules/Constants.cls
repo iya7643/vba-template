@@ -29,8 +29,8 @@ Private Const WEEKDAY_JP_JSON = "{" & _
 
 Public THIS_SHEET_NAMES As Object
 Private Const THIS_SHEET_NAMES_JSON = "{" & _
-    " 'BELL': 'Pr', " & _
-    " 'MARKET_INDEX': '指数一覧' " & _
+    " 'SHEET1': 'Sheet1', " & _
+    " 'SHEET2': 'Sheet2' " & _
 "}"
 
 Public FILE_PATTERNS As Object
