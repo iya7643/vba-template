@@ -2,8 +2,8 @@ VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} CalendarForm 
    Caption         =   "Select Date"
    ClientHeight    =   5796
-   ClientLeft      =   228
-   ClientTop       =   1116
+   ClientLeft      =   230
+   ClientTop       =   1120
    ClientWidth     =   11700
    OleObjectBlob   =   "CalendarForm.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
@@ -1149,7 +1149,7 @@ End Sub
 Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
     Dim PrevMonth As Long               'Month preceding selected month. Used for trailing dates
     Dim NextMonth As Long               'Month following selected month. Used for trailing dates
-    Dim Today As Date                   'Today's date
+    Dim today As Date                   'Today's date
     Dim TodayDay As Long                'Day number of today's date
     Dim StartDayOfWeek  As Long         'Stores the weekday number of the first day in selected month
     Dim LastDayOfMonth As Long          'Last day of the month
@@ -1199,9 +1199,9 @@ Private Sub SetDays(MonthIn As Long, YearIn As Long, Optional DayIn As Long)
 
     'If user is viewing current month/year, we want to highlight today's date. If
     'not, TodayDay is set to 0, since that value will never be encountered
-    Today = Date
-    If YearIn = Year(Today) And MonthIn = Month(Today) Then
-        TodayDay = Day(Today)
+    today = Date
+    If YearIn = Year(today) And MonthIn = Month(today) Then
+        TodayDay = Day(today)
     Else
         TodayDay = 0
     End If

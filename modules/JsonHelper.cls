@@ -19,7 +19,7 @@ Attribute VB_Exposed = False
 ' @class JsonConverter
 ' @author tim.hall.engr@gmail.com
 ' @license MIT (http://www.opensource.org/licenses/mit-license.php)
-'' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ '
+'' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
 '
 ' Based originally on vba-json (with extensive changes)
 ' BSD license included below
@@ -50,7 +50,7 @@ Attribute VB_Exposed = False
 ' ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 ' (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ' SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ '
+' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
 ' Based on: VBA-JSON v2.3.1 by Tim Hall (https://github.com/VBA-tools/VBA-JSON)
 ' Modified by: iya7643
 ' Purpose: 参照設定を不要にして標準モジュールからクラスモジュールへ移行
@@ -61,7 +61,7 @@ Attribute VB_Exposed = False
 ' - クラスモジュールへ移行
 ' - Dictionary から Scripting.Dictionary への明示的変更
 ' - ParseJson() と ConvertToJson() 以外をPrivateへ変更
-' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ '
+' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
 Option Explicit
 
 ' === VBA-UTC Headers
@@ -130,7 +130,7 @@ Private Declare Function utc_TzSpecificLocalTimeToSystemTime Lib "kernel32" Alia
 ' @param {String} json_String
 ' @return {Object} (Dictionary or Collection)
 ' @throws 10001 - JSON parse error
-' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '   ' サンプルコード
 '    Dim json As String, obj As Object
 '    json = "{ 'a': 'banana', 'b': 123, 'c': [5,6,7] }"
@@ -527,13 +527,13 @@ Private Function json_ParseString(json_String As String, ByRef json_Index As Lon
         json_Char = VBA.Mid$(json_String, json_Index, 1)
 
         Select Case json_Char
-        Case "¥"
-            ' Escaped string, ¥¥, or ¥/
+        Case "\"
+            ' Escaped string, \\, or \/
             json_Index = json_Index + 1
             json_Char = VBA.Mid$(json_String, json_Index, 1)
 
             Select Case json_Char
-            Case """", "¥", "/", "'"
+            Case """", "\", "/", "'"
                 json_BufferAppend json_Buffer, json_Char, json_BufferPosition, json_BufferLength
                 json_Index = json_Index + 1
             Case "b"
@@ -552,7 +552,7 @@ Private Function json_ParseString(json_String As String, ByRef json_Index As Lon
                 json_BufferAppend json_Buffer, vbTab, json_BufferPosition, json_BufferLength
                 json_Index = json_Index + 1
             Case "u"
-                ' Unicode character escape (e.g. ¥u00a9 = Copyright)
+                ' Unicode character escape (e.g. \u00a9 = Copyright)
                 json_Index = json_Index + 1
                 json_Code = VBA.Mid$(json_String, json_Index, 4)
                 json_BufferAppend json_Buffer, VBA.ChrW(VBA.Val("&h" + json_Code)), json_BufferPosition, json_BufferLength
@@ -645,7 +645,7 @@ End Function
 
 Private Function json_Encode(ByVal json_Text As Variant) As String
     ' Reference: http://www.ietf.org/rfc/rfc4627.txt
-    ' Escape: ", ¥, /, backspace, form feed, line feed, carriage return, tab
+    ' Escape: ", \, /, backspace, form feed, line feed, carriage return, tab
     Dim json_Index As Long
     Dim json_Char As String
     Dim json_AscCode As Long
@@ -664,38 +664,38 @@ Private Function json_Encode(ByVal json_Text As Variant) As String
             json_AscCode = json_AscCode + 65536
         End If
 
-        ' From spec, ", ¥, and control characters must be escaped (solidus is optional)
+        ' From spec, ", \, and control characters must be escaped (solidus is optional)
 
         Select Case json_AscCode
         Case 34
-            ' " -> 34 -> ¥"
-            json_Char = "¥"""
+            ' " -> 34 -> \"
+            json_Char = "\"""
         Case 92
-            ' ¥ -> 92 -> ¥¥
-            json_Char = "¥¥"
+            ' \ -> 92 -> \\
+            json_Char = "\\"
         Case 47
-            ' / -> 47 -> ¥/ (optional)
+            ' / -> 47 -> \/ (optional)
             If JsonOptions.EscapeSolidus Then
-                json_Char = "¥/"
+                json_Char = "\/"
             End If
         Case 8
-            ' backspace -> 8 -> ¥b
-            json_Char = "¥b"
+            ' backspace -> 8 -> \b
+            json_Char = "\b"
         Case 12
-            ' form feed -> 12 -> ¥f
-            json_Char = "¥f"
+            ' form feed -> 12 -> \f
+            json_Char = "\f"
         Case 10
-            ' line feed -> 10 -> ¥n
-            json_Char = "¥n"
+            ' line feed -> 10 -> \n
+            json_Char = "\n"
         Case 13
-            ' carriage return -> 13 -> ¥r
-            json_Char = "¥r"
+            ' carriage return -> 13 -> \r
+            json_Char = "\r"
         Case 9
-            ' tab -> 9 -> ¥t
-            json_Char = "¥t"
+            ' tab -> 9 -> \t
+            json_Char = "\t"
         Case 0 To 31, 127 To 65535
             ' Non-ascii characters -> convert to 4-digit hex
-            json_Char = "¥u" & VBA.Right$("0000" & VBA.Hex$(json_AscCode), 4)
+            json_Char = "\u" & VBA.Right$("0000" & VBA.Hex$(json_AscCode), 4)
         End Select
 
         json_BufferAppend json_Buffer, json_Char, json_BufferPosition, json_BufferLength
@@ -842,7 +842,7 @@ End Function
 ' @module UtcConverter
 ' @author tim.hall.engr@gmail.com
 ' @license MIT (http://www.opensource.org/licenses/mit-license.php)
-'' ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ '
+'' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
 
 ' (Declarations moved to top)
 

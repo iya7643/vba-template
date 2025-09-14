@@ -35,8 +35,8 @@ Private Const THIS_SHEET_NAMES_JSON = "{" & _
 
 Public FILE_PATTERNS As Object
 Private Const FILE_PATTERNS_JSON = "{" & _
-    " 'PHILIP': '^504890047_BELL INVESTMENTS_¥¥d{8}¥¥.xlsx$', " & _
-    " 'TORA': '^EOD_REPORT_BELLINVEST_Phillip_¥¥d{8}¥¥.csv$' " & _
+    " 'PHILIP': '^123456_xxxxxx_\\d{8}\\.xlsx$', " & _
+    " 'TORA': '^REPORT_xxxxxx_yyyyyy_\\d{8}\\.csv$' " & _
 "}"
 
 

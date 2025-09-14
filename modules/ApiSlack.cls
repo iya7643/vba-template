@@ -48,7 +48,7 @@ On Error GoTo Except
 
     If http.status = 200 Then
     Else
-        Err.Raise 999, "Slackへの通知に失敗しました。¥n" & http.ResponseText
+        Err.Raise 999, "Slackへの通知に失敗しました。\n" & http.ResponseText
     End If
     
     GoTo Finally

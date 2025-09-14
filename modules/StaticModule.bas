@@ -66,7 +66,7 @@ Public Type json_Options
     ' The JSON standard requires object keys to be quoted (" or '), use this option to allow unquoted keys
     AllowUnquotedKeys As Boolean
 
-    ' The solidus (/) is not required to be escaped, use this option to escape them as ¥/ in ConvertToJson
+    ' The solidus (/) is not required to be escaped, use this option to escape them as \/ in ConvertToJson
     EscapeSolidus As Boolean
 End Type
 

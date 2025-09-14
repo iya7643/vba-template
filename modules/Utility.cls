@@ -143,7 +143,7 @@ Public Function getFileByFilePattern(ByVal dir_path As String, ByVal file_patter
 On Error GoTo Except
     Dim target_dir_path As String
     target_dir_path = OneDriveUrlToLocalPath(dir_path)
-    target_dir_path = IIf(Right(target_dir_path, 1) = "¥", Left(target_dir_path, Len(target_dir_path) - 1), target_dir_path)
+    target_dir_path = IIf(Right(target_dir_path, 1) = "\", Left(target_dir_path, Len(target_dir_path) - 1), target_dir_path)
     If Not glob.util.isExistsFolder(target_dir_path) Then
         result = Array("以下のフォルダが存在しません。" & vbCrLf & target_dir_path, "")
         GoTo Finally
@@ -208,10 +208,10 @@ On Error GoTo Except
     Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
     
     Dim file_name As Variant, dst_file_path As String
-    file_name = Split(src_file_path, "¥")
+    file_name = Split(src_file_path, "\")
     file_name = file_name(UBound(file_name))
     
-    dst_file_path = dst_dir_path & IIf(Right(dst_dir_path, 1) = "¥", file_name, "¥" & file_name)
+    dst_file_path = dst_dir_path & IIf(Right(dst_dir_path, 1) = "\", file_name, "\" & file_name)
     
     If is_overwrite Then
         If fso.FileExists(dst_file_path) Then Call fso.deleteFile(dst_file_path, True)
@@ -266,22 +266,22 @@ End Sub
 '''''
 ' Dictionaryの値をキーの配列から取得します。
 '''''
-Public Function dictor(ByVal dict As Object, ByVal dict_keys As Variant)
+Public Function dictor(ByVal dict As Object, ByVal dict_keys As Variant) As Variant
     Const PROC_NAME = MODULE_NAME & ".dictor"
-    Dim i As Integer, key As Variant, tmp As Object
+    Dim i As Integer, key_ As Variant, tmp As Object
     
 On Error GoTo Except
     Set tmp = dict
     For i = 0 To UBound(dict_keys) - 1
-        key = dict_keys(i)
-        Set tmp = tmp.Item(key)
+        key_ = dict_keys(i)
+        Set tmp = tmp.Item(key_)
     Next
 
-    key = dict_keys(UBound(dict_keys))
-    If VarType(tmp.Item(key)) = vbObject Then
-        Set dictor = tmp.Item(key)
+    key_ = dict_keys(UBound(dict_keys))
+    If VarType(tmp.Item(key_)) = vbObject Then
+        Set dictor = tmp.Item(key_)
     Else
-        dictor = tmp.Item(key)
+        dictor = tmp.Item(key_)
     End If
     
     GoTo Finally
@@ -684,7 +684,7 @@ On Error GoTo Except
     ' ThisWorkbookだと接続が不安定なため、TEMPディレクトリにコピーしてそこから読み取ります。
     If StrComp(wb_path, ThisWorkbook.FullName, vbTextCompare) = 0 Then
         is_thisworkbook = True
-        data_src_path = Environ$("TEMP") & "¥ado_tmp_" & Format(Now, "yyyymmdd_hhnnss") & ".xlsx"
+        data_src_path = Environ$("TEMP") & "\ado_tmp_" & Format(Now, "yyyymmdd_hhnnss") & ".xlsx"
         ThisWorkbook.SaveCopyAs data_src_path
         SetAttr data_src_path, vbReadOnly
     End If
