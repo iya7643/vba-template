@@ -136,7 +136,7 @@ End Function
 ' フォルダパスとファイル名の正規表現から、該当するファイルのパスを取得します。
 ' @return array[エラーメッセージ, ファイルパス]
 '''''
-Public Function getFileByFilePattern(ByVal dir_path As String, ByVal file_pattern As String) As Variant
+Public Function getFileByFilePattern(ByVal dir_path As String, ByVal file_pattern As String, Optional ByVal is_asc As Boolean = False) As Variant
     Const PROC_NAME = MODULE_NAME & ".getFileByFilePattern"
     Dim result As Variant
 
@@ -157,17 +157,20 @@ On Error GoTo Except
     regex.Global = False
     regex.IgnoreCase = True
     
-    Dim file As Object
+    Dim file As Object, matched_file As Object
     For Each file In folder.Files
-        If regex.Test(file.Name) Then Exit For
+        If regex.Test(file.Name) Then
+            Set matched_file = file
+            If is_asc Then Exit For
+        End If
     Next
     
-    If file Is Nothing Then
+    If matched_file Is Nothing Then
         result = Array("ファイル名が以下のパターンのファイルがありません。" & vbCrLf & regex.Pattern, "")
         GoTo Finally
     End If
     
-    result = Array("", file.Path)
+    result = Array("", matched_file.Path)
     
     GoTo Finally
     
