@@ -16,12 +16,19 @@ Private Const MODULE_NAME = "ApiSlack"
 
 Private Const BASE_URL As String = "https://hooks.slack.com/services/"
 Private Const WORKSPACE_ID As String = "xxxxx"
-Private Const APP_ID = "xxxxx"
-Private Const TOKEN = "xxxxx"
 
+Private APP_ID As String
+Private TOKEN As String
 Private http As Object
 
 Private Sub Class_Initialize()
+    If IS_TEST Then
+        APP_ID = "xxxxx"
+        TOKEN = "xxxxx"
+    Else
+        APP_ID = "xxxxx"
+        TOKEN = "xxxxx"
+    End If
     Set http = CreateObject("WinHttp.WinHttpRequest.5.1")
 End Sub
 
