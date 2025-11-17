@@ -144,7 +144,7 @@ On Error GoTo Except
     Dim target_dir_path As String
     target_dir_path = OneDriveUrlToLocalPath(dir_path)
     target_dir_path = IIf(Right(target_dir_path, 1) = "\", Left(target_dir_path, Len(target_dir_path) - 1), target_dir_path)
-    If Not glob.util.isExistsFolder(target_dir_path) Then
+    If Not isExistsFolder(target_dir_path) Then
         result = Array("以下のフォルダが存在しません。" & vbCrLf & target_dir_path, "")
         GoTo Finally
     End If
