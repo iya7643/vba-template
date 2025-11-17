@@ -71,6 +71,8 @@ Public Sub update()
             If progress_index_ > segs Then progress_index_ = 1
         End If
     End If
+    
+    DoEvents
 End Sub
 
 Public Sub setStatus(ByVal status As String)
