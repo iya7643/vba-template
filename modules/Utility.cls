@@ -670,6 +670,56 @@ Finally:
 End Function
 
 '''''
+' スケジュール実行をセットします。
+' App.Utility.scheduleOnTime("プロシージャ名", Now + TimeSerial(0, 0, 1)) のように呼び出す。
+'''''
+Public Sub scheduleOnTime(ByVal target_proc_name As String, ByVal run_at As Date)
+    Const PROC_NAME = MODULE_NAME & ".scheduleOnTime"
+
+On Error GoTo Except
+    If StaticVariables.on_time_tasks Is Nothing Then Set StaticVariables.on_time_tasks = CreateObject("Scripting.Dictionary")
+    
+    Call cancelOnTime(target_proc_name)
+    
+    Application.OnTime EarliestTime:=run_at, Procedure:=target_proc_name, Schedule:=True
+    StaticVariables.on_time_tasks(target_proc_name) = run_at
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+
+End Sub
+
+'''''
+' スケジュール実行を解除します。
+'''''
+Public Sub cancelOnTime(ByVal target_proc_name As String)
+    Const PROC_NAME = MODULE_NAME & ".cancelOnTime"
+
+On Error GoTo Except
+    If StaticVariables.on_time_tasks Is Nothing Then GoTo Finally
+    
+    On Error Resume Next
+    If StaticVariables.on_time_tasks.Exists(target_proc_name) Then
+        Application.OnTime EarliestTime:=StaticVariables.on_time_tasks(target_proc_name), Procedure:=target_proc_name, Schedule:=False
+        StaticVariables.on_time_tasks.Remove target_proc_name
+    End If
+    On Error GoTo 0
+    
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+
+End Sub
+
+'''''
 ' ADODBでSQLを発行します。
 '''''
 Public Function query(ByVal wb_path As String, ByVal sql As String, ByVal tmp_ws As Worksheet) As Collection

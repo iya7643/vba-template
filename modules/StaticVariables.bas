@@ -11,3 +11,7 @@ Public progress_bar_active As Boolean
 
 Public m_app As AppContext
 
+
+' Application.OnTimeで使う用 { プロシージャ名: Date }
+Public on_time_tasks As Object
+

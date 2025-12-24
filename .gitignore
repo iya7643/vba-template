@@ -1,7 +1,5 @@
 ~*.xlsx
 ~*.xlsb
 ~*.xlsm
-Thisworkbook.cls
-Sheet*.cls
 bak/*
 slack_ids.txt
