@@ -15,29 +15,29 @@ Public Sub run()
 
 On Error GoTo Except
     ' 必須シートの存在チェックをします。
-    Dim sheet_name_key As Variant, sheet_name As String
-    For Each sheet_name_key In App.Constants.THIS_SHEET_NAMES
-        If App.Utility.isExistsSheet(App.Constants.THIS_SHEET_NAMES(sheet_name_key)) = False Then
-            Call MsgBox(App.Constants.THIS_SHEET_NAMES(sheet_name_key) & "シートがありません。", vbExclamation + vbOKOnly)
+    Dim sheet_name As Variant
+    For Each sheet_name In App.Constants.THIS_SHEET_NAMES.Items
+        If App.Utility.isExistsSheet(sheet_name) = False Then
+            Call MsgBox(sheet_name & "シートがありません。", vbExclamation + vbOKOnly)
             GoTo Finally
         End If
     Next
-    
     
     Call App.ProgressBarController.start("処理中")
     
     ' メイン処理
     
     Call App.ProgressBarController.finish
+    Call MsgBox("処理が完了しました。", vbInformation + vbOKOnly)
     GoTo Finally
 
 Except:
+    Call App.ProgressBarController.finish
     Dim err_msg As String
     err_msg = "エラーが発生しました。" & vbCrLf & _
         "Number: " & Err.Number & vbCrLf & _
         "Source: " & Err.Source & vbCrLf & _
         "Description: " & Err.Description
-    Call App.ProgressBarController.finish
     Call MsgBox(err_msg, vbExclamation)
 
 Finally:
