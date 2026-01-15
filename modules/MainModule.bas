@@ -32,12 +32,12 @@ On Error GoTo Except
     GoTo Finally
 
 Except:
-    Call App.ProgressBarController.finish
     Dim err_msg As String
     err_msg = "エラーが発生しました。" & vbCrLf & _
         "Number: " & Err.Number & vbCrLf & _
         "Source: " & Err.Source & vbCrLf & _
         "Description: " & Err.Description
+    Call App.ProgressBarController.finish
     Call MsgBox(err_msg, vbExclamation)
 
 Finally:
