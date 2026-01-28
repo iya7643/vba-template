@@ -239,21 +239,42 @@ Public Function openBookInvisible(ByVal file_path As String, Optional ByVal pass
     prev_sec = Application.AutomationSecurity
 
     Application.AutomationSecurity = msoAutomationSecurityForceDisable
-    Dim wb As Workbook
-    
-    If isFileOpen(file_path) Then
-        Set wb = Workbooks(Dir(file_path))
-    Else
-        If pass = "" Then
-            Set wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True)
-        Else
-            Set wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True, Password:=pass)
+    Dim wb As Workbook, result_wb As Workbook
+
+On Error GoTo Except
+    For Each wb In Application.Workbooks
+        If StrComp(wb.FullName, file_path, vbTextCompare) = 0 Then
+            Set result_wb = wb
+            GoTo Finally
         End If
-    End If
-    wb.Windows(1).Visible = False
+    Next
     
-    Set openBookInvisible = wb
+    For Each wb In Application.Workbooks
+        If StrComp(wb.Name, Dir(file_path), vbTextCompare) = 0 Then
+            Err.Raise 999, "", "同名の別ファイルが開かれています。" & vbCrLf & _
+                "以下のファイルを閉じてから再度実行してください。" & vbCrLf & _
+                wb.FullName
+        End If
+    Next
+    
+    If pass = "" Then
+        Set result_wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True)
+    Else
+        Set result_wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True, Password:=pass)
+    End If
+    
+    GoTo Finally
+    
+Except:
     Application.AutomationSecurity = prev_sec
+    If Not result_wb Is Nothing Then Call App.Utility.closeBook(result_wb)
+    Err.Raise Err.Number, Err.Source, Err.Description
+    
+Finally:
+    result_wb.Windows(1).Visible = False
+    Set openBookInvisible = result_wb
+    Application.AutomationSecurity = prev_sec
+
 End Function
 
 '''''
