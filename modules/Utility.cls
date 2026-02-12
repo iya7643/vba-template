@@ -694,16 +694,39 @@ End Function
 ' スケジュール実行をセットします。
 ' App.Utility.scheduleOnTime("プロシージャ名", Now + TimeSerial(0, 0, 1)) のように呼び出す。
 '''''
-Public Sub scheduleOnTime(ByVal target_proc_name As String, ByVal run_at As Date)
+Public Sub scheduleOnTime(ByVal target_proc_name As String, ByVal run_at As Date, Optional ByVal max_retry As Integer = 1)
     Const PROC_NAME = MODULE_NAME & ".scheduleOnTime"
+    Dim last_err_no As Long, last_err_src As String, last_err_desc As String
 
 On Error GoTo Except
     If StaticVariables.on_time_tasks Is Nothing Then Set StaticVariables.on_time_tasks = CreateObject("Scripting.Dictionary")
     
     Call cancelOnTime(target_proc_name)
     
-    Application.OnTime EarliestTime:=run_at, Procedure:=target_proc_name, Schedule:=True
-    StaticVariables.on_time_tasks(target_proc_name) = run_at
+    Dim retry_idx As Integer
+    For retry_idx = 1 To max_retry
+        Err.Clear
+        On Error Resume Next
+        Application.OnTime EarliestTime:=run_at, Procedure:=target_proc_name, Schedule:=True
+        If Err.Number = 0 Then
+            StaticVariables.on_time_tasks(target_proc_name) = run_at
+            On Error GoTo 0
+            GoTo Finally
+        End If
+        
+        last_err_no = Err.Number
+        last_err_src = Err.Source
+        last_err_desc = Err.Description
+        
+        On Error GoTo 0
+        
+        run_at = Now + TimeSerial(0, 0, retry_idx * 2)
+        
+        Err.Raise last_err_no, last_err_src & " " & PROC_NAME, last_err_desc
+        
+        GoTo Finally
+    Next
+    
     
     GoTo Finally
 
