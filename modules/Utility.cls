@@ -68,13 +68,15 @@ End Function
 '''''
 ' シートがあるかチェックします。
 '''''
-Public Function isExistsSheet(ByVal sheet_name As String) As Boolean
+Public Function isExistsSheet(ByVal sheet_name As String, Optional ByVal wb As Workbook) As Boolean
     Const PROC_NAME = MODULE_NAME & ".isExistsSheet"
     Dim ws As Worksheet
     Dim is_exists As Boolean: is_exists = False
     
 On Error GoTo Except
-    For Each ws In ThisWorkbook.Worksheets
+    Dim wb_target As Workbook
+    Set wb_target = IIf(wb Is Nothing, ThisWorkbook, wb)
+    For Each ws In wb_target.Worksheets
         If ws.Name = sheet_name Then
             is_exists = True
             Exit For
@@ -234,7 +236,9 @@ End Sub
 '''''
 ' 非表示で別のブックを開きます。
 '''''
-Public Function openBookInvisible(ByVal file_path As String, Optional ByVal pass As String = "") As Workbook
+Public Function openBookInvisible( _
+    ByVal file_path As String, Optional ByVal pass As String = "", Optional ByVal is_readonly As Boolean = True _
+) As Workbook
     Dim prev_sec As Long
     prev_sec = Application.AutomationSecurity
 
@@ -258,9 +262,9 @@ On Error GoTo Except
     Next
     
     If pass = "" Then
-        Set result_wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True)
+        Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly)
     Else
-        Set result_wb = Workbooks.Open(FileName:=file_path, ReadOnly:=True, Password:=pass)
+        Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly, Password:=pass)
     End If
     
     GoTo Finally
@@ -280,9 +284,9 @@ End Function
 '''''
 ' ブックを閉じます。
 '''''
-Public Sub closeBook(ByRef wb As Workbook)
+Public Sub closeBook(ByRef wb As Workbook, Optional ByVal is_need_save As Boolean = False)
     Application.DisplayAlerts = False
-    wb.Close SaveChanges:=False
+    wb.Close SaveChanges:=is_need_save
     Set wb = Nothing
     Application.DisplayAlerts = True
 End Sub
@@ -936,4 +940,6 @@ Public Function OneDriveUrlToLocalPath(ByRef url As String) As String
     End If
 
 End Function
+
+
 
