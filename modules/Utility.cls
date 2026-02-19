@@ -17,45 +17,56 @@ Private Const MODULE_NAME = "Utility"
 '''''
 ' 最終行を取得します。
 '''''
-Public Function lastRow(ByVal ws As Worksheet, Optional ByVal col_value As Variant) As Long
-    Dim result As Long: result = 1
+Public Function lastRow(ByVal ws As Worksheet, Optional ByVal col_value As Variant = 1) As Long
+    Const PROC_NAME = MODULE_NAME & ".lastRow"
+    Dim last_row As Long: last_row = 1
     
-    If IsMissing(col_value) Then
-        result = ws.Cells.Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
-        GoTo Finally
-    End If
-    
+On Error GoTo Except
     Dim col_num As Long
     If IsNumeric(col_value) Then
         col_num = CLng(col_value)
     Else
         col_num = ws.Range(col_value & "1").Column
     End If
-    result = ws.Cells(ws.Rows.Count, col_num).End(xlUp).Row
+    last_row = ws.Cells(ws.Rows.Count, col_num).End(xlUp).Row
     
+    GoTo Finally
+    
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
 Finally:
-    lastRow = result
+    lastRow = last_row
     
 End Function
 
 '''''
 ' 最終列を取得します。
 '''''
-Public Function lastCol(ByVal ws As Worksheet, Optional ByVal row_no As Long = 0) As Long
+Public Function lastCol(ByVal ws As Worksheet, Optional ByVal row_no As Long = 1) As Long
+    Const PROC_NAME = MODULE_NAME & ".lastCol"
+    Dim last_col As Long: last_col = 1
+    
+On Error GoTo Except
     Dim rng As Range
-    If row_no > 0 Then
-        Set rng = ws.Rows(row_no)
-    Else
-        Set rng = ws.UsedRange
-    End If
+    Set rng = IIf(0 < row_no, ws.Rows(row_no), ws.UsedRange)
     
     Dim last_cell As Range
     Set last_cell = rng.Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByColumns, SearchDirection:=xlPrevious)
     If last_cell Is Nothing Then
-        lastCol = 0
+        last_col = 0
     Else
-        lastCol = last_cell.Column
+        last_col = last_cell.Column
     End If
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    lastCol = last_col
+
 End Function
 
 '''''
@@ -96,7 +107,7 @@ End Function
 '''''
 ' すべてのシートがあるかチェックします。
 '''''
-Public Function isExistsSheets(ByVal sheet_names As Variant) As Boolean
+Public Function isExistsSheets(ByVal sheet_names As Variant, Optional ByVal wb As Workbook) As Boolean
     Const PROC_NAME = MODULE_NAME & ".isExistsSheets"
     Dim ws As Worksheet
     Dim is_exists As Boolean: is_exists = True
@@ -104,7 +115,7 @@ Public Function isExistsSheets(ByVal sheet_names As Variant) As Boolean
 On Error GoTo Except
     Dim sheet_name As Variant
     For Each sheet_name In sheet_names
-        If Not isExistsSheet(sheet_name) Then
+        If Not isExistsSheet(sheet_name, wb) Then
             is_exists = False
             Exit For
         End If
@@ -153,7 +164,7 @@ On Error GoTo Except
 
     Dim fso As Object, folder As Object, regex As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
-    Set folder = fso.GetFolder(dir_path)
+    Set folder = fso.GetFolder(target_dir_path)
     Set regex = CreateObject("VBScript.RegExp")
     regex.Pattern = file_pattern
     regex.Global = False
@@ -234,49 +245,52 @@ Finally:
 End Sub
 
 '''''
-' 非表示で別のブックを開きます。
+' 別のブックを開きます。
+' @params
+' file_path: ブックのファイルパス
+' is_invisible: 非表示で開く場合はTrue
+' is_readonly: 読み取り専用で開く場合はTrue
+' pass: ブックのパスワード
 '''''
-Public Function openBookInvisible( _
-    ByVal file_path As String, Optional ByVal pass As String = "", Optional ByVal is_readonly As Boolean = True _
+Public Function openBook( _
+    ByVal file_path As String, Optional ByVal is_invisible As Boolean = True, Optional ByVal is_readonly As Boolean = True, _
+    Optional ByVal pass As String = "" _
 ) As Workbook
+    Const PROC_NAME = MODULE_NAME & ".openBook"
+    Dim result_wb As Workbook
+    
     Dim prev_sec As Long
     prev_sec = Application.AutomationSecurity
-
     Application.AutomationSecurity = msoAutomationSecurityForceDisable
-    Dim wb As Workbook, result_wb As Workbook
 
 On Error GoTo Except
+    Dim wb As Workbook
+    ' 既に開かれている場合はそのブックを返却します。
     For Each wb In Application.Workbooks
         If StrComp(wb.FullName, file_path, vbTextCompare) = 0 Then
             Set result_wb = wb
             GoTo Finally
         End If
     Next
-    
-    For Each wb In Application.Workbooks
-        If StrComp(wb.Name, Dir(file_path), vbTextCompare) = 0 Then
-            Err.Raise 999, "", "同名の別ファイルが開かれています。" & vbCrLf & _
-                "以下のファイルを閉じてから再度実行してください。" & vbCrLf & _
-                wb.FullName
-        End If
-    Next
-    
+
     If pass = "" Then
         Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly)
     Else
         Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly, Password:=pass)
     End If
     
+    If result_wb Is Nothing Then Err.Raise vbObjectError, "", "以下のパスのファイルがありません。" & vbCrLf & file_path
+    
     GoTo Finally
     
 Except:
     Application.AutomationSecurity = prev_sec
     If Not result_wb Is Nothing Then Call App.Utility.closeBook(result_wb)
-    Err.Raise Err.Number, Err.Source, Err.Description
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
     
 Finally:
-    result_wb.Windows(1).Visible = False
-    Set openBookInvisible = result_wb
+    result_wb.Windows(1).Visible = Not is_invisible
+    Set openBook = result_wb
     Application.AutomationSecurity = prev_sec
 
 End Function
@@ -353,16 +367,29 @@ End Function
 '''''
 ' すべてのシートのA1セルを選択して先頭シートを表示します。
 '''''
-Public Sub scrollAndSelectA1AllSheets()
-    Dim i As Integer
-    With Application.ActiveWorkbook
-        For i = .Worksheets.Count To 1 Step -1
-            .Worksheets(i).Activate
-            .Worksheets(i).Range("A1").Select
-            ActiveWindow.ScrollRow = 1
-            ActiveWindow.ScrollColumn = 1
-        Next
-    End With
+Public Sub scrollAndSelectA1AllSheets(Optional ByVal target_wb As Workbook)
+    Const PROC_NAME = MODULE_NAME & ".scrollAndSelectA1AllSheets"
+    
+On Error GoTo Except
+    Dim wb As Workbook
+    Set wb = IIf(target_wb Is Nothing, ActiveWorkbook, target_wb)
+    
+    Dim sheet_idx As Integer, ws As Worksheet
+    For sheet_idx = wb.Worksheets.Count To 1 Step -1
+        Set ws = wb.Worksheets(sheet_idx)
+        ws.Activate
+        ws.Range("A1").Select
+        ActiveWindow.ScrollRow = 1
+        ActiveWindow.ScrollColumn = 1
+    Next
+    
+    GoTo Finally
+
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+
 End Sub
 
 '''''
@@ -377,11 +404,7 @@ On Error GoTo Except
     Dim ch As String, i As Long, display_len As Long
     For i = 1 To Len(str)
         ch = Mid(str, i, 1)
-        If AscW(ch) > 255 Then
-            display_len = display_len + 2
-        Else
-            display_len = display_len + 1
-        End If
+        display_len = IIf(AscW(ch) > 255, display_len + 2, display_len + 1)
     Next i
 
     ' 必要な埋め文字数を計算
@@ -392,11 +415,7 @@ On Error GoTo Except
     ' 埋め文字を追加
     Dim padding As String
     padding = String(pad_count, Left(pad_char, 1))
-    If is_left Then
-        result = padding & str
-    Else
-        result = str & padding
-    End If
+    result = IIf(is_left, padding & str, str & padding)
 
     GoTo Finally
 
@@ -431,16 +450,16 @@ End Function
 ' Collection[Collection]をインデックスが1から始まる2次元配列へ変換します。
 '''''
 Public Function nestedCollectionToArray(ByVal records As Collection, Optional ByVal is_start_one = True) As Variant
+    Const PROC_NAME = MODULE_NAME & ".nestedCollectionToArray"
     Dim result As Variant: result = Array()
     
+On Error GoTo Except
     If records.Count = 0 Then GoTo Finally
     
     Dim i As Long, j As Long, col_count As Long
     col_count = records(1).Count
     For i = 1 To records.Count
-        If col_count <> records.Item(i).Count Then
-            Err.Raise vbObjectError, "", "inner collectionの要素数が行によって異なります。"
-        End If
+        If col_count <> records.Item(i).Count Then Err.Raise vbObjectError, "", "inner collectionの要素数が行によって異なります。"
     Next
     
     Dim item_offset As Integer: item_offset = -1
@@ -453,9 +472,49 @@ Public Function nestedCollectionToArray(ByVal records As Collection, Optional By
         Next
     Next
     
+    GoTo Finally
+    
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+    
 Finally:
     nestedCollectionToArray = result
     ' NOTE: ActiveSheet.Range("A1").Resize(UBound(arr, 1), UBound(arr, 2)).Value = arr
+End Function
+
+'''''
+' 2次元配列をCollection[Collection]へ変換します。
+'''''
+Public Function arrayToCollection(ByVal arr As Variant) As Collection
+    Const PROC_NAME = MODULE_NAME & ".arrayToCollection"
+    Dim records As New Collection
+    
+On Error GoTo Except
+    If Not IsArray(arr) Then Err.Raise vbObjectError, "", "配列ではありません。"
+    
+    Dim row_lb As Integer, row_ub As Long, col_lb As Integer, col_ub As Long
+    row_lb = LBound(arr, 1)
+    row_ub = UBound(arr, 1)
+    col_lb = LBound(arr, 2)
+    col_ub = UBound(arr, 2)
+    
+    Dim row_idx As Long, col_idx As Long, record As Collection
+    For row_idx = row_lb To row_ub
+        Set record = New Collection
+        For col_idx = col_lb To col_ub
+            record.Add arr(row_idx, col_idx)
+        Next
+        records.Add record
+    Next
+    
+    GoTo Finally
+    
+Except:
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+    
+Finally:
+    Set arrayToCollection = records
+
 End Function
 
 '''''
@@ -707,14 +766,15 @@ On Error GoTo Except
     
     Call cancelOnTime(target_proc_name)
     
-    Dim retry_idx As Integer
+    Dim try_at As Date, retry_idx As Integer
+    try_at = run_at
     For retry_idx = 1 To max_retry
         Err.Clear
         On Error Resume Next
-        Application.OnTime EarliestTime:=run_at, Procedure:=target_proc_name, Schedule:=True
+        Application.OnTime EarliestTime:=try_at, Procedure:=target_proc_name, Schedule:=True
         If Err.Number = 0 Then
-            StaticVariables.on_time_tasks(target_proc_name) = run_at
             On Error GoTo 0
+            StaticVariables.on_time_tasks(target_proc_name) = try_at
             GoTo Finally
         End If
         
@@ -724,13 +784,10 @@ On Error GoTo Except
         
         On Error GoTo 0
         
-        run_at = Now + TimeSerial(0, 0, retry_idx * 2)
-        
-        Err.Raise last_err_no, last_err_src & " " & PROC_NAME, last_err_desc
-        
-        GoTo Finally
+        try_at = Now + TimeSerial(0, 0, retry_idx * 2)
     Next
     
+    Err.Raise last_err_no, last_err_src & " " & PROC_NAME, last_err_desc
     
     GoTo Finally
 
