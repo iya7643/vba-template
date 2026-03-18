@@ -63,10 +63,10 @@ Public Function lastCol(ByVal ws As Worksheet, Optional ByVal row_no As Variant)
 On Error GoTo Except
     Dim rng As Range
     If IsMissing(row_no) Then
+        Set rng = ws.Cells
+    Else
         If CLng(row_no) <= 0 Then GoTo Finally
         Set rng = ws.Rows(CLng(row_no))
-    Else
-        Set rng = ws.Cells
     End If
     
     Dim last_cell As Range
