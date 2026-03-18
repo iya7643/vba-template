@@ -17,11 +17,24 @@ Private Const MODULE_NAME = "Utility"
 '''''
 ' 最終行を取得します。
 '''''
-Public Function lastRow(ByVal ws As Worksheet, Optional ByVal col_value As Variant = 1) As Long
+Public Function lastRow(ByVal ws As Worksheet, Optional ByVal col_value As Variant) As Long
     Const PROC_NAME = MODULE_NAME & ".lastRow"
     Dim last_row As Long: last_row = 1
     
 On Error GoTo Except
+    ' 列番号または列記号の指定がない場合、全体の最終行を返します。
+    If IsMissing(col_value) Then
+        Dim last_cell As Range
+        Set last_cell = ws.Cells.Find( _
+            What:="*", _
+            LookAt:=xlPart, LookIn:=xlFormulas, _
+            SearchOrder:=xlByRows, SearchDirection:=xlPrevious _
+        )
+        If Not last_cell Is Nothing Then last_row = last_cell.Row
+        GoTo Finally
+    End If
+    
+    ' 列番号または列記号の指定がある場合、その列の最終行を返します。
     Dim col_num As Long
     If IsNumeric(col_value) Then
         col_num = CLng(col_value)
@@ -43,21 +56,26 @@ End Function
 '''''
 ' 最終列を取得します。
 '''''
-Public Function lastCol(ByVal ws As Worksheet, Optional ByVal row_no As Long = 1) As Long
+Public Function lastCol(ByVal ws As Worksheet, Optional ByVal row_no As Variant) As Long
     Const PROC_NAME = MODULE_NAME & ".lastCol"
     Dim last_col As Long: last_col = 1
     
 On Error GoTo Except
     Dim rng As Range
-    Set rng = IIf(0 < row_no, ws.Rows(row_no), ws.UsedRange)
+    If IsMissing(row_no) Then
+        If CLng(row_no) <= 0 Then GoTo Finally
+        Set rng = ws.Rows(CLng(row_no))
+    Else
+        Set rng = ws.Cells
+    End If
     
     Dim last_cell As Range
-    Set last_cell = rng.Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByColumns, SearchDirection:=xlPrevious)
-    If last_cell Is Nothing Then
-        last_col = 0
-    Else
-        last_col = last_cell.Column
-    End If
+    Set last_cell = rng.Find( _
+        What:="*", _
+        LookAt:=xlPart, LookIn:=xlFormulas, _
+        SearchOrder:=xlByColumns, SearchDirection:=xlPrevious _
+    )
+    If Not last_cell Is Nothing Then last_col = last_cell.Column
     
     GoTo Finally
 
