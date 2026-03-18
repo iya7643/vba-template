@@ -106,17 +106,19 @@ End Function
 
 '''''
 ' すべてのシートがあるかチェックします。
+' @return [boolean, string]
 '''''
-Public Function isExistsSheets(ByVal sheet_names As Variant, Optional ByVal wb As Workbook) As Boolean
+Public Function isExistsSheets(ByVal target_sheet_names As Variant, Optional ByVal wb As Workbook) As Variant
     Const PROC_NAME = MODULE_NAME & ".isExistsSheets"
     Dim ws As Worksheet
-    Dim is_exists As Boolean: is_exists = True
+    Dim result As Variant
+    result = Array(True, "")
     
 On Error GoTo Except
     Dim sheet_name As Variant
-    For Each sheet_name In sheet_names
+    For Each sheet_name In target_sheet_names
         If Not isExistsSheet(sheet_name, wb) Then
-            is_exists = False
+            result = Array(False, sheet_name & "シートがありません。")
             Exit For
         End If
     Next
@@ -127,7 +129,7 @@ Except:
     Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
 
 Finally:
-    isExistsSheets = is_exists
+    isExistsSheets = result
 
 End Function
 
@@ -546,7 +548,7 @@ End Function
 '''''
 ' ファイル選択ダイアログを表示して、選択したファイルパスを返します。
 '''''
-Public Function selectFile() As String
+Public Function selectFile(Optional ByVal extension As String = "") As String
     Const PROC_NAME = MODULE_NAME & ".selectFile"
     Dim file_path As String: file_path = ""
 
@@ -557,6 +559,7 @@ On Error GoTo Except
         .title = "ファイルを選択してください。"
         .Filters.Clear
         .AllowMultiSelect = False
+        If extension <> "" Then .Filters.Add UCase(extension), "*." & extension
         If .Show = -1 Then file_path = .SelectedItems(1)
     End With
     
@@ -997,6 +1000,4 @@ Public Function OneDriveUrlToLocalPath(ByRef url As String) As String
     End If
 
 End Function
-
-
 
