@@ -114,7 +114,7 @@ Public Sub clearWatches()
     watch_items.RemoveAll
 End Sub
 
-Private Sub app_SheetCalculate(ByVal ws As Object)
+Private Sub m_app_SheetCalculate(ByVal ws As Object)
     Call init
 
 On Error GoTo Finally
