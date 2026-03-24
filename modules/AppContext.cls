@@ -16,6 +16,7 @@ Option Explicit
 Private m_json_helper As JsonHelper
 Private m_constants As Constants
 Private m_utility As Utility
+Private m_app_event_handler As AppEventHandler
 
 #If USE_SLACK Then
 Private m_api_slack As ApiSlack
@@ -48,6 +49,11 @@ End Property
 Public Property Get Utility() As Utility
     If m_utility Is Nothing Then Set m_utility = New Utility
     Set Utility = m_utility
+End Property
+
+Public Property Get AppEventHandler() As AppEventHandler
+    If m_app_event_handler Is Nothing Then Set m_app_event_handler = New AppEventHandler
+    Set AppEventHandler = m_app_event_handler
 End Property
 
 #If USE_SLACK Then

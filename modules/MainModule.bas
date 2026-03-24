@@ -7,7 +7,7 @@ Private Const MODULE_NAME = "MainModule"
 '''''
 '
 '''''
-Public Sub run()
+Public Sub sample()
     Application.DisplayAlerts = False
     Application.ScreenUpdating = False
     Application.Calculation = xlCalculationManual
