@@ -12,6 +12,8 @@ Public progress_bar_active As Boolean
 Public m_app As AppContext
 
 
-' Application.OnTimeで使う用 { プロシージャ名: Date }
+' Application.OnTimeで使う用（dict[プロシージャ名: Date]）
 Public on_time_tasks As Object
 
+' AppEventHandlerで使う用（{ ブックのパス|シート名: { セルアドレス: { "VALUE": 値, "PROC": 実行するプロシージャ名 } } }）
+Public watch_items As Object

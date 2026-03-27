@@ -548,7 +548,7 @@ On Error GoTo Except
     Dim fd As FileDialog
     Set fd = Application.FileDialog(msoFileDialogFolderPicker)
     With fd
-        .title = "フォルダを選択してください。"
+        .Title = "フォルダを選択してください。"
         .AllowMultiSelect = False
         If .Show = -1 Then dir_path = .SelectedItems(1)
     End With
@@ -574,7 +574,7 @@ On Error GoTo Except
     Dim fd As FileDialog
     Set fd = Application.FileDialog(msoFileDialogFilePicker)
     With fd
-        .title = "ファイルを選択してください。"
+        .Title = "ファイルを選択してください。"
         .Filters.Clear
         .AllowMultiSelect = False
         If extension <> "" Then .Filters.Add UCase(extension), "*." & extension
@@ -602,7 +602,7 @@ On Error GoTo Except
     Dim fd As FileDialog
     Set fd = Application.FileDialog(msoFileDialogFilePicker)
     With fd
-        .title = "ファイルを選択してください。"
+        .Title = "ファイルを選択してください。"
         .Filters.Clear
         .AllowMultiSelect = True
         If .Show = -1 Then

@@ -19,14 +19,12 @@ Private Const MODULE_NAME = "AppEventHandler"
 Private WithEvents m_app As Application
 Attribute m_app.VB_VarHelpID = -1
 
-Private watch_items As Object   ' { ブックのパス|シート名: { セルアドレス: { "VALUE": 値, "PROC": 実行するプロシージャ名 } } }
-
 '''''
 ' 初期化します。
 '''''
 Private Sub init()
     Set m_app = Application
-    If watch_items Is Nothing Then Set watch_items = CreateObject("Scripting.Dictionary")
+    If StaticVariables.watch_items Is Nothing Then Set StaticVariables.watch_items = CreateObject("Scripting.Dictionary")
 End Sub
 
 '''''
@@ -51,10 +49,10 @@ Public Sub addWatch( _
     Dim watch_item_key As String
     watch_item_key = buildWatchItemKey(wb_path, ws_name)
     
-    If Not watch_items.Exists(watch_item_key) Then
+    If Not StaticVariables.watch_items.Exists(watch_item_key) Then
         Set watch_items(watch_item_key) = CreateObject("Scripting.Dictionary")
     End If
-    If watch_items(watch_item_key).Exists(cell_addr) Then GoTo Finally
+    If StaticVariables.watch_items(watch_item_key).Exists(cell_addr) Then GoTo Finally
     
     Dim watch_item_value As Variant
     With New CodeBlock
@@ -71,9 +69,9 @@ Public Sub addWatch( _
         watch_item_value = wb_target.Worksheets(ws_name).Range(cell_addr).Value
     End With
     
-    Set watch_items(watch_item_key)(cell_addr) = CreateObject("Scripting.Dictionary")
-    watch_items(watch_item_key)(cell_addr)("VALUE") = watch_item_value
-    watch_items(watch_item_key)(cell_addr)("PROC") = target_proc_name
+    Set StaticVariables.watch_items(watch_item_key)(cell_addr) = CreateObject("Scripting.Dictionary")
+    StaticVariables.watch_items(watch_item_key)(cell_addr)("VALUE") = watch_item_value
+    StaticVariables.watch_items(watch_item_key)(cell_addr)("PROC") = target_proc_name
     
 Finally:
 
@@ -91,15 +89,15 @@ Public Sub removeWatch(ByVal target_wb_path As String, ByVal ws_name As String, 
     
     Dim watch_item_key As String
     watch_item_key = buildWatchItemKey(wb_path, ws_name)
-    If Not watch_items.Exists(watch_item_key) Then GoTo Finally
+    If Not StaticVariables.watch_items.Exists(watch_item_key) Then GoTo Finally
     
     If cell_addr = "" Then
-        watch_items.Remove watch_item_key
+        StaticVariables.watch_items.Remove watch_item_key
     Else
-        If Not watch_items(watch_item_key).Exists(cell_addr) Then GoTo Finally
-        watch_items(watch_item_key).Remove cell_addr
+        If Not StaticVariables.watch_items(watch_item_key).Exists(cell_addr) Then GoTo Finally
+        StaticVariables.watch_items(watch_item_key).Remove cell_addr
         
-        If watch_items(watch_item_key).Count = 0 Then watch_items.Remove watch_item_key
+        If StaticVariables.watch_items(watch_item_key).Count = 0 Then StaticVariables.watch_items.Remove watch_item_key
     End If
 
 Finally:
@@ -111,7 +109,7 @@ End Sub
 '''''
 Public Sub clearWatches()
     Call init
-    watch_items.RemoveAll
+    StaticVariables.watch_items.RemoveAll
 End Sub
 
 Private Sub m_app_SheetCalculate(ByVal ws As Object)
@@ -122,20 +120,20 @@ On Error GoTo Finally
     wb_path = LCase$(ws.Parent.FullName)
     ws_name = LCase$(ws.Name)
     watch_item_key = buildWatchItemKey(wb_path, ws_name)
-    If Not watch_items.Exists(watch_item_key) Then GoTo Finally
+    If Not StaticVariables.watch_items.Exists(watch_item_key) Then GoTo Finally
     
     Dim cell_addr As Variant
-    For Each cell_addr In watch_items(watch_item_key).Keys
+    For Each cell_addr In StaticVariables.watch_items(watch_item_key).Keys
         Dim prev_value As Variant, curr_value As Variant, target_proc_name As String
-        prev_value = watch_items(watch_item_key)(cell_addr)("VALUE")
+        prev_value = StaticVariables.watch_items(watch_item_key)(cell_addr)("VALUE")
         curr_value = ws.Range(cell_addr).Value
         If IsError(curr_value) Then GoTo ContinueForCellAddr
         
         If CStr(prev_value) <> CStr(curr_value) Then
-            Debug.Print "calculate: " & watch_item_key & "!" & cell_addr & ": " & prev_value & " -> " & curr_value
+'            Debug.Print "calculate: " & watch_item_key & "!" & cell_addr & ": " & prev_value & " -> " & curr_value
             target_proc_name = watch_items(watch_item_key)(cell_addr)("PROC")
             m_app.Run target_proc_name
-            watch_items(watch_item_key)(cell_addr)("VALUE") = curr_value
+            StaticVariables.watch_items(watch_item_key)(cell_addr)("VALUE") = curr_value
         End If
     
 ContinueForCellAddr:
@@ -144,3 +142,5 @@ ContinueForCellAddr:
 Finally:
 
 End Sub
+
+
