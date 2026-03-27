@@ -30,8 +30,6 @@ Private m_google_chat As ApiGoogleChat
 Private m_holidays_jp As ApiHolidaysJp
 #End If
 
-Private m_api_jpx As ApiJpx
-
 Private m_progress_bar_controller As ProgressBarController
 
 
@@ -78,12 +76,6 @@ Public Property Get ApiHolidaysJp() As ApiHolidaysJp
     Set ApiHolidaysJp = m_holidays_jp
 End Property
 #End If
-
-Public Property Get ApiJpx() As ApiJpx
-    If m_api_jpx Is Nothing Then Set m_api_jpx = New ApiJpx
-    Set ApiJpx = m_api_jpx
-End Property
-
 
 Public Property Get ProgressBarController() As ProgressBarController
     If m_progress_bar_controller Is Nothing Then Set m_progress_bar_controller = New ProgressBarController
