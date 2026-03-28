@@ -775,6 +775,25 @@ Finally:
 End Function
 
 '''''
+' ログシートに記録します。
+'''''
+Public Sub recordToLogSheet(ByVal log_text As String)
+    Dim ws As Worksheet
+    On Error Resume Next
+    Set ws = ThisWorkbook.Worksheets("ログ")
+    On Error GoTo 0
+    If ws Is Nothing Then GoTo Finally
+    
+    Dim next_row As Long
+    next_row = App.Utility.lastRow(ws) + 1
+    ws.Cells(next_row, 1).Value = Now
+    ws.Cells(next_row, 2).Value = log_text
+
+Finally:
+
+End Sub
+
+'''''
 ' スケジュール実行をセットします。
 ' App.Utility.scheduleOnTime("プロシージャ名", Now + TimeSerial(0, 0, 1)) のように呼び出す。
 '''''

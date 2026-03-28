@@ -142,3 +142,18 @@ Finally:
     Set getRunningJobs = records
 
 End Function
+
+'''''
+' プロシージャ名に対応する情報を取得します。
+'''''
+Private Function getProcAttributes( _
+    ByVal target_proc_name As String, Optional ByVal wb_name As String = "", Optional ByVal ws_name As String = "" _
+) As Collection
+    Dim result As New Collection
+    
+    ' TODO
+    
+Finally:
+    Set getProcAttributes = result
+
+End Function
