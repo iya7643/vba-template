@@ -693,6 +693,63 @@ Finally:
 End Function
 
 '''''
+' CSVファイルを出力します。
+' @param records: CSV出力するデータ
+' @param file_path: CSVファイルの出力先
+' @param charset: 文字コード(utf-8, Shift_JIS, ...)
+' @param need_dbl_quote: ダブルクォーテーションで括るか否か
+'''''
+Public Sub exportToCsv( _
+    ByVal records As Collection, ByVal file_path As String, _
+    Optional ByVal target_charset As String = "utf-8", Optional need_dbl_quote As Boolean = False _
+)
+    Const PROC_NAME = MODULE_NAME & ".exportToCsv"
+    Dim stream As Object: Set stream = CreateObject("ADODB.Stream")
+    Dim is_opened As Boolean: is_opened = False
+On Error GoTo Except
+    stream.Type = AdType.Text_
+    stream.Charset = target_charset
+    stream.Open
+    is_opened = True
+    
+    Dim record As Collection
+    For Each record In records
+        Dim tmp_record As Collection: Set tmp_record = New Collection
+        If need_dbl_quote Then
+            Dim record_value As Variant
+            For Each record_value In record
+                tmp_record.Add DBL_QUOTE & Replace(CStr(record_value), DBL_QUOTE, DBL_QUOTE & DBL_QUOTE) & DBL_QUOTE
+            Next
+        Else
+            Set tmp_record = record
+        End If
+        
+        Dim lines As Variant
+        ReDim lines(1 To tmp_record.Count)
+        
+        Dim col_idx As Long
+        For col_idx = 1 To tmp_record.Count
+            lines(col_idx) = tmp_record.Item(col_idx)
+        Next
+        lines = Join(lines, ",")
+        stream.WriteText lines & vbCrLf
+    Next
+    
+    stream.SaveToFile file_path, AdSaveToFile.CreateOverWrite_
+    stream.Close
+    GoTo Finally
+
+Except:
+    If is_opened Then stream.Close
+    Set stream = Nothing
+    Err.Raise Err.Number, Err.Source & " " & PROC_NAME, Err.Description
+
+Finally:
+    Set stream = Nothing
+
+End Sub
+
+'''''
 ' シートのオートフィルターがセットされている行を取得して、解除します。
 '''''
 Public Function clearAutoFilter(ByVal ws As Worksheet) As Long
