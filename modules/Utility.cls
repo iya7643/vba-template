@@ -294,9 +294,9 @@ On Error GoTo Except
     Next
 
     If pass = "" Then
-        Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly)
+        Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly, UpdateLinks:=0)
     Else
-        Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly, Password:=pass)
+        Set result_wb = Workbooks.Open(Filename:=file_path, ReadOnly:=is_readonly, UpdateLinks:=0, Password:=pass)
     End If
     
     If result_wb Is Nothing Then Err.Raise vbObjectError, "", "以下のパスのファイルがありません。" & vbCrLf & file_path
