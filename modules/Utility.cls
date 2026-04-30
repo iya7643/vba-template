@@ -104,7 +104,11 @@ Public Function isExistsSheet(ByVal sheet_name As String, Optional ByVal wb As W
     
 On Error GoTo Except
     Dim wb_target As Workbook
-    Set wb_target = IIf(wb Is Nothing, ThisWorkbook, wb)
+    If wb Is Nothing Then
+        Set wb_target = ThisWorkbook
+    Else
+        Set wb_target = wb
+    End If
     For Each ws In wb_target.Worksheets
         If ws.Name = sheet_name Then
             is_exists = True
@@ -392,7 +396,11 @@ Public Sub scrollAndSelectA1AllSheets(Optional ByVal target_wb As Workbook)
     
 On Error GoTo Except
     Dim wb As Workbook
-    Set wb = IIf(target_wb Is Nothing, ActiveWorkbook, target_wb)
+    If target_wb Is Nothing Then
+        Set wb = ActiveWorkbook
+    Else
+        Set wb = target_wb
+    End If
     
     Dim sheet_idx As Integer, ws As Worksheet
     For sheet_idx = wb.Worksheets.Count To 1 Step -1
@@ -478,17 +486,19 @@ On Error GoTo Except
     
     Dim i As Long, j As Long, col_count As Long
     col_count = records(1).Count
+    If col_count = 0 Then GoTo Finally
     For i = 1 To records.Count
         If col_count <> records.Item(i).Count Then Err.Raise vbObjectError, "", "inner collectionの要素数が行によって異なります。"
     Next
     
-    Dim item_offset As Integer: item_offset = -1
-    If is_start_one Then item_offset = 0
+    Dim row_lb As Long, col_lb As Long
+    row_lb = IIf(is_start_one, 1, 0)
+    col_lb = IIf(is_start_one, 1, 0)
     
-    ReDim result(1 + item_offset To records.Count + item_offset, 1 + item_offset To records(1).Count + item_offset)
-    For i = 1 To records.Count + item_offset
-        For j = 1 To records(1).Count + item_offset
-            result(i + item_offset, j + item_offset) = records.Item(i).Item(j)
+    ReDim result(row_lb To row_lb + records.Count - 1, col_lb To col_lb + col_count - 1)
+    For i = 1 To records.Count
+        For j = 1 To col_count
+            result(row_lb + i - 1, col_lb + j - 1) = records.Item(i).Item(j)
         Next
     Next
     

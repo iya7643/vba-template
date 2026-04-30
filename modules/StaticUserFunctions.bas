@@ -3,6 +3,12 @@ Option Explicit
 Option Private Module
 Private Const MODULE_NAME = "StaticUserFunctions"
 
+Private Function getProcName(ByVal target_proc_name As String) As String
+    Dim proc_names As Variant
+    proc_names = Split(target_proc_name, "!")
+    getProcName = CStr(proc_names(UBound(proc_names)))
+End Function
+
 '''''
 ' Applicationイベント（SheetCalculate）の監視状態を返却します。
 '''''
@@ -18,8 +24,8 @@ Public Function GetWatchItemStatus(ByVal target_proc_name As String, Optional By
     For Each watch_item_key In StaticVariables.watch_items.Keys
         For Each cell_addr In StaticVariables.watch_items(watch_item_key)
             Dim proc_name_watched As String
-            proc_name_watched = Split(StaticVariables.watch_items(watch_item_key)(cell_addr)("PROC"), "!")(1)
-            If proc_name_watched <> target_proc_name Then GoTo ContinueForCellAddr
+            proc_name_watched = getProcName(StaticVariables.watch_items(watch_item_key)(cell_addr)("PROC"))
+            If proc_name_watched <> getProcName(target_proc_name) Then GoTo ContinueForCellAddr
             
             is_watched = True
             GoTo Finally
@@ -47,11 +53,11 @@ Public Function GetRunningJobStatus(ByVal target_proc_name As String, Optional B
         GoTo Finally
     End If
     
-    Dim ont_time_task_key As Variant, running_proc_name As String, run_at As Variant
-    For Each ont_time_task_key In StaticVariables.on_time_tasks.Keys
-        running_proc_name = Split(ont_time_task_key, "!")(1)
-        If running_proc_name = target_proc_name Then
-            run_at = StaticVariables.on_time_tasks(ont_time_task_key)
+    Dim on_time_task_key As Variant, running_proc_name As String, run_at As Variant
+    For Each on_time_task_key In StaticVariables.on_time_tasks.Keys
+        running_proc_name = getProcName(CStr(on_time_task_key))
+        If running_proc_name = getProcName(target_proc_name) Then
+            run_at = StaticVariables.on_time_tasks(on_time_task_key)
             Exit For
         End If
     Next
@@ -109,11 +115,10 @@ Private Function getWatchItems() As Collection
         wb_name = watch_item_keys(0)
         ws_name = watch_item_keys(1)
         
-        Dim cell_addr As Variant, target_proc_names As Variant
-        For Each cell_addr In watch_items(watch_item_key)
+        Dim cell_addr As Variant
+        For Each cell_addr In StaticVariables.watch_items(watch_item_key)
             Set record = New Collection
-            target_proc_names = Split(StaticVariables.watch_items(watch_item_key)(cell_addr)("PROC"), "!")
-            records.Add getProcAttributes(target_proc_names(1), wb_name, ws_name)
+            records.Add getProcAttributes(StaticVariables.watch_items(watch_item_key)(cell_addr)("PROC"), wb_name, ws_name)
         Next
     Next
 
@@ -151,7 +156,14 @@ Private Function getProcAttributes( _
 ) As Collection
     Dim result As New Collection
     
-    ' TODO
+    If wb_name = "" And ws_name = "" Then
+        result.Add "OnTime"
+    Else
+        result.Add "SheetCalculate"
+    End If
+    result.Add getProcName(target_proc_name)
+    result.Add wb_name
+    result.Add ws_name
     
 Finally:
     Set getProcAttributes = result

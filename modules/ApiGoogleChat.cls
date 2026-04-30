@@ -36,8 +36,7 @@ Public Sub sendMessage(ByVal text As String)
 
 On Error GoTo Except
     Dim post_data As String
-    post_data = "{""text"": ""<TEXT>""}"
-    post_data = Replace(post_data, "<TEXT>", text)
+    post_data = "{""text"":" & App.JsonHelper.ConvertToJson(text) & "}"
     
     Dim url As String
     url = Replace(BASE_URL, "${SPACE_ID}", SPACE_ID)
@@ -48,7 +47,7 @@ On Error GoTo Except
 
     If http.status = 200 Then
     Else
-        Err.Raise vbObjectError + 1000, "GoogleChatへの通知に失敗しました。\n" & http.ResponseText
+        Err.Raise vbObjectError + 1000, PROC_NAME, "GoogleChatへの通知に失敗しました。" & vbCrLf & http.ResponseText
     End If
     
     GoTo Finally

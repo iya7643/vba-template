@@ -34,6 +34,15 @@ Private Function buildWatchItemKey(ByVal wb_path As String, ByVal ws_name As Str
     buildWatchItemKey = LCase$(wb_path & "|" & ws_name)
 End Function
 
+Private Function hasValueChanged(ByVal prev_value As Variant, ByVal curr_value As Variant) As Boolean
+    If IsError(curr_value) Then Exit Function
+    If IsError(prev_value) Then
+        hasValueChanged = True
+    Else
+        hasValueChanged = (CStr(prev_value) <> CStr(curr_value))
+    End If
+End Function
+
 '''''
 ' 監視対象を追加します。
 '''''
@@ -50,7 +59,7 @@ Public Sub addWatch( _
     watch_item_key = buildWatchItemKey(wb_path, ws_name)
     
     If Not StaticVariables.watch_items.Exists(watch_item_key) Then
-        Set watch_items(watch_item_key) = CreateObject("Scripting.Dictionary")
+        Set StaticVariables.watch_items(watch_item_key) = CreateObject("Scripting.Dictionary")
     End If
     If StaticVariables.watch_items(watch_item_key).Exists(cell_addr) Then GoTo Finally
     
@@ -127,11 +136,9 @@ On Error GoTo Finally
         Dim prev_value As Variant, curr_value As Variant, target_proc_name As String
         prev_value = StaticVariables.watch_items(watch_item_key)(cell_addr)("VALUE")
         curr_value = ws.Range(cell_addr).Value
-        If IsError(curr_value) Then GoTo ContinueForCellAddr
-        
-        If CStr(prev_value) <> CStr(curr_value) Then
+        If hasValueChanged(prev_value, curr_value) Then
 '            Debug.Print "calculate: " & watch_item_key & "!" & cell_addr & ": " & prev_value & " -> " & curr_value
-            target_proc_name = watch_items(watch_item_key)(cell_addr)("PROC")
+            target_proc_name = StaticVariables.watch_items(watch_item_key)(cell_addr)("PROC")
             m_app.Run target_proc_name
             StaticVariables.watch_items(watch_item_key)(cell_addr)("VALUE") = curr_value
         End If
